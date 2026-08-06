@@ -15,6 +15,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: guestbook-ui # так называется сервис в примере ArgoCD
+                name: my-app # так называется сервис в примере ArgoCD
                 port:
                   number: 80

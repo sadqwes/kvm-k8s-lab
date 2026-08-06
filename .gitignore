@@ -1,0 +1,18 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+terraform.tfvars
+secrets.tfvars
+
+# Ansible
+ansible/inventory.ini
+ansible/.kube/
+*.retry
+
+# kubeconfig
+**/.kube/
+
+# OS
+.DS_Store

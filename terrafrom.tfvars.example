@@ -1,0 +1,3 @@
+libvirt_uri        = "qemu+ssh://USER@HOST/system?keyfile=/PATH/TO/KEY&sshauth=privkey&no_verify=1"
+ssh_public_key_path  = "/PATH/TO/KEY.pub"
+ssh_private_key_path = "/PATH/TO/KEY"

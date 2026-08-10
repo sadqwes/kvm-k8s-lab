@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+configMapGenerator:
+  - name: dash-k8s-cluster
+    files: [k8s-cluster.json]
+    options:
+      labels:
+        grafana_dashboard: "1"
+  - name: dash-k8s-pods
+    files: [k8s-pods.json]
+    options:
+      labels:
+        grafana_dashboard: "1"
+  - name: dash-node-exporter
+    files: [node-exporter-full.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

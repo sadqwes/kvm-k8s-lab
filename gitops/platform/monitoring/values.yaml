@@ -1,14 +1,3 @@
 grafana:
   admin:
     existingSecret: grafana-admin-password
-  dashboards:
-    default:
-      kubernetes-cluster-overview:
-        gnetId: 15208
-        datasource: Prometheus
-      kubernetes-pods:
-        gnetId: 4686
-        datasource: Prometheus
-      node-exporter-full:
-        gnetId: 1860
-        datasource: Prometheus

@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
     targetRevision: main
-    path: gitops/platform/monitoring
+    path: gitops/platform/loki-datasource
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

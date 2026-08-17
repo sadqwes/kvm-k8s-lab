@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: postgresql
-    targetRevision: "ВСТАВЬ_ВЕРСИЮ"
+    targetRevision: "18.6.0"
     helm:
       releaseName: task-api-postgres
       values: |

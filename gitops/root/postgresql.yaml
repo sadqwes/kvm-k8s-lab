@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: postgresql
+    targetRevision: "ВСТАВЬ_ВЕРСИЮ"
+    helm:
+      releaseName: task-api-postgres
+      values: |
+        auth:
+          existingSecret: task-api-postgres
+          username: taskuser
+          database: tasks
+        primary:
+          persistence:
+            enabled: true
+            storageClass: longhorn
+            size: 2Gi
+        readReplicas:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

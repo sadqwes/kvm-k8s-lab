@@ -1,3 +1,10 @@
 grafana:
   admin:
     existingSecret: grafana-admin-password
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki.monitoring.svc:3100
+      access: proxy
+      isDefault: false
+      editable: true

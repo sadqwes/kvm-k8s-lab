@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki-stack
-    targetRevision: "2.10.3"
+    targetRevision: "ВСТАВЬ_ВЕРСИЮ"
     helm:
       releaseName: loki
       values: |
@@ -36,3 +36,9 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: loki
+      jsonPointers:
+        - /spec/volumeClaimTemplates

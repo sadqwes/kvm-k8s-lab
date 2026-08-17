@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki-stack
-    targetRevision: "ВСТАВЬ_ВЕРСИЮ"
+    targetRevision: "2.10.3"
     helm:
       releaseName: loki
       values: |

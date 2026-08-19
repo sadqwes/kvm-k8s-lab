@@ -18,6 +18,9 @@ echo "🔧 4/5 SealedSecrets"
 kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.27.1/controller.yaml
 kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
 
+kubectl patch deploy ingress-nginx-controller -n ingress-nginx --type json \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--default-ssl-certificate=ingress-nginx/tls-wildcard"}]' || true
+
 echo "🔧 5/5 Root Application"
 kubectl apply -f bootstrap/root-app.yaml
 

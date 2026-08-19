@@ -18,4 +18,4 @@ ansible/.kube/
 .DS_Store
 
 # certs
-certs/certs/
+certs/

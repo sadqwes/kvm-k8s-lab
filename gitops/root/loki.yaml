@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki-stack
-    targetRevision: "2.10.3"
+    targetRevision: "2.10.2"
     helm:
       releaseName: loki
       values: |
@@ -20,10 +20,11 @@ spec:
             size: 5Gi
         promtail:
           enabled: true
-          config:
-            lokiAddress: http://loki:3100/loki/api/v1/push
         grafana:
           enabled: false
+          sidecar:
+            datasources:
+              enabled: false
         prometheus:
           enabled: false
   destination:

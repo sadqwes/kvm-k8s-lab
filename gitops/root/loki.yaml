@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki
-    targetRevision: "7.3.0"
+    targetRevision: "6.31.0"
     helm:
       releaseName: loki
       values: |
@@ -34,6 +34,14 @@ spec:
             enabled: true
             storageClass: longhorn
             size: 5Gi
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+        gateway:
+          enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

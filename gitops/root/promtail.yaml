@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: promtail
-    targetRevision: "ВЕРСИЯ_ИЗ_ШАГА_1"
+    targetRevision: "6.17.1"
     helm:
       releaseName: promtail
       values: |

@@ -42,6 +42,10 @@ spec:
           replicas: 0
         gateway:
           enabled: false
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

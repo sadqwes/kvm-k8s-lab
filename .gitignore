@@ -16,3 +16,6 @@ ansible/.kube/
 
 # OS
 .DS_Store
+
+# certs
+certs/certs/

@@ -7,6 +7,10 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - taskapi.local
+      secretName: tls-wildcard
   rules:
   - host: taskapi.local
     http:

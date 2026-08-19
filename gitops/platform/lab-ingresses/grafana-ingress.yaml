@@ -8,6 +8,10 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - grafana.local
+      secretName: tls-wildcard
   rules:
     - host: grafana.local
       http:

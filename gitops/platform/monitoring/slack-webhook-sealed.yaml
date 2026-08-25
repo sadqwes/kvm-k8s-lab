@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: slack-webhook
+  namespace: monitoring
+spec:
+  encryptedData:
+    SLACK_WEBHOOK_URL: AgAMqwyuKYYpCzJEQWV7IhGwKZP+dg+Nak1ExfPtI7Ldy4x2jicBdE7+nbUu3ylpYl4vhYuxNKluVJN2KsI9WecUEvi4u8J7yZ0pDKi8GhfxiD7fY9wESMa+YO3oG1omUJzVLILWGdpJIAAhfT6ui/P3sMFG+32Kfun5V5hicnvJPhKM5qV25DR0CGUzInwF5P46MJBOniN59YJCV3GwW28AWEFrio5OXlGpdBJ/xq+puHuCICeqx7MAyZlNIce/8Cf/jTVQpPdizkFAG5v8S63wIGcIT+PzwjQcq/ePfQuYfYHMCZQQIjYzZdw89kw0MFYuBDCjUhhRP4oc9zHF/IZmw2eFi5D1XDTBGw7X2ta+yMxT7AZIpJtqrpQo9OaSreYlRec+8r6Zxm9R0OkLLgHhgefdGi5WexR8TWLH3n75cKKEiN5YwjNdZtvk0ifr3CiiV0kMe1P9pbQPeXm2wjG24Ksk18QbWL4ynFleehJJpBt1mlALe+n+FWxouunvZM5x8vCOqvrBzI3wVIJkBqhEZbfgJCeqCm9pPN3bl3+Sdl6sZZx5JihKAUTYwPEQ+Mt4rHOss+2+BRqzhovJMLsVkSPpE2eyVu3qLOt0dK4TSVsFf1F1i4tO460T+WM+2L8fQ+o+tcH4uQxfs1ZPpmv6YOb6BRUyovV18Z48C1fG+wBtfWb13H3FsCKouArUA8pcyqlPaw/PHDjzc3HUgol9YEqqpgrvKeJ2hrFWN/fZ2P4qTfeW9gWGweI79OdOuzPxajMtKAj/9M9kT/2jGtB81/BDz5ZZaTNn4w9jiB1Y/uU=
+  template:
+    metadata:
+      name: slack-webhook
+      namespace: monitoring
+    type: Opaque

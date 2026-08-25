@@ -15,7 +15,7 @@ data:
             settings:
               recipient: "#alerts"
             secureSettings:
-              webhookUrl: ${SLACK_WEBHOOK_URL}
+              url: ${SLACK_WEBHOOK_URL}
             disableResolveMessage: false
   policies.yaml: |
     apiVersion: 1

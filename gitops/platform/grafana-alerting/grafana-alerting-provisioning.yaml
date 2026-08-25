@@ -14,7 +14,6 @@ data:
             type: slack
             settings:
               recipient: "#alerts"
-            secureSettings:
               url: ${SLACK_WEBHOOK_URL}
             disableResolveMessage: false
   policies.yaml: |

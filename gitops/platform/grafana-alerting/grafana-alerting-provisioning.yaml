@@ -5,17 +5,17 @@ metadata:
   namespace: monitoring
 data:
   contact-points.yaml: |
-    apiVersion: 1
-    contactPoints:
-      - orgId: 1
-        name: slack
-        receivers:
-          - uid: slack1
-            type: slack
-            settings: {}
-            secureSettings:
-              url: ${SLACK_WEBHOOK_URL}
-            disableResolveMessage: false
+  apiVersion: 1
+  contactPoints:
+    - orgId: 1
+      name: slack
+      receivers:
+        - uid: slack1
+          type: slack
+          settings:
+            recipient: "#alerts"
+          secureSettings:
+            url: SLACK_WEBHOOK_URL
   policies.yaml: |
     apiVersion: 1
     policies:

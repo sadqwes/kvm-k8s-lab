@@ -28,6 +28,8 @@ spec:
           requests:
             memory: 512Mi
             cpu: 250m
+        makeBucketJob:
+          enabled: false
         buckets:
           - name: velero-backups
             policy: none

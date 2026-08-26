@@ -33,7 +33,6 @@ spec:
         credentials:
           useSecret: true
           name: velero-credentials
-          existingSecret: true
         snapshotsEnabled: true
         deployNodeAgent: true
         nodeAgent:

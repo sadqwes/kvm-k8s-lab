@@ -42,6 +42,7 @@ spec:
           image:
             repository: rancher/kubectl
             tag: v1.31.14
+        upgradeCRDs: false
   destination:
     server: https://kubernetes.default.svc
     namespace: velero

@@ -16,9 +16,8 @@ spec:
         persistence:
           enabled: true
           storageClass: longhorn
-          size: 10Gi
-        rootUser: admin
-        rootPassword: ***REMOVED***
+          size: 5Gi
+        existingSecret: minio-credentials
         resources:
           requests:
             memory: 512Mi

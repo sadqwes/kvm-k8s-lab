@@ -33,15 +33,15 @@ spec:
         credentials:
           useSecret: true
           name: velero-credentials
-          secretContents:
-            cloud: |
-              [default]
-              aws_access_key_id=admin
-              aws_secret_access_key=***REMOVED***
+          existingSecret: true
         snapshotsEnabled: true
         deployNodeAgent: true
         nodeAgent:
           privileged: true
+        kubectl:
+          image:
+            repository: rancher/kubectl
+            tag: v1.31.14
   destination:
     server: https://kubernetes.default.svc
     namespace: velero

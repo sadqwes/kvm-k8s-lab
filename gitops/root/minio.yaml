@@ -17,9 +17,6 @@ spec:
         image:
           repository: quay.io/minio/minio
           tag: RELEASE.2023-09-16T01-01-47Z
-        mcImage:
-          repository: quay.io/minio/mc
-          tag: RELEASE.2023-09-16T01-01-47Z
         persistence:
           enabled: true
           storageClass: longhorn
@@ -28,12 +25,6 @@ spec:
           requests:
             memory: 512Mi
             cpu: 250m
-        makeBucketJob:
-          enabled: false
-        buckets:
-          - name: velero-backups
-            policy: none
-            purge: false
   destination:
     server: https://kubernetes.default.svc
     namespace: minio-system

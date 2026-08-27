@@ -33,9 +33,6 @@ spec:
           volumeSnapshotLocation:
             - name: default
               provider: csi
-        credentials:
-          useSecret: true
-          name: velero-credentials
         snapshotsEnabled: true
         deployNodeAgent: true
         nodeAgent:

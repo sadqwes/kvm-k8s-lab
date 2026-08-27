@@ -52,6 +52,10 @@ resource "libvirt_domain" "vm" {
     volume_id = libvirt_volume.vm_disk[count.index].id
   }
 
+  cpu {
+    mode = "host-passthrough"
+  }
+
   console {
     type        = "pty"
     target_type = "serial"

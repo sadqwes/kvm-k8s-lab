@@ -3,4 +3,4 @@ kind: Setting
 metadata:
   name: default-replica-count
   namespace: longhorn-system
-value: "2"
+value: '{"v1":"2","v2":"2"}'

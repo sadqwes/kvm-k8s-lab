@@ -23,6 +23,9 @@ spec:
             - name: default
               provider: aws
               bucket: velero-backups
+              credential:
+                name: velero-credentials
+                key: cloud
               config:
                 region: us-east-1
                 s3ForcePathStyle: "true"

@@ -6,22 +6,30 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.bitnami.com/bitnami
+    repoURL: registry-1.docker.io/bitnamicharts
     chart: postgresql
-    targetRevision: 15.5.5
+    targetRevision: "18.8.9"
     helm:
       releaseName: knowledge-postgres
       values: |
         auth:
+          existingSecret: knowledge-postgres-creds
           username: kg
           database: kg
-          existingSecret: kg-postgres-creds
         primary:
           persistence:
+            enabled: true
+            storageClass: longhorn
             size: 2Gi
+        readReplicas:
+          enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: knowledge
   syncPolicy:
-    automated: {prune: true, selfHeal: true}
-    syncOptions: ["CreateNamespace=true"]
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

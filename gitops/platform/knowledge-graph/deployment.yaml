@@ -24,7 +24,7 @@ spec:
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
-                  name: kg-postgres-creds
+                  name: knowledge-postgres-creds
                   key: password
           startupProbe:
             httpGet: {path: /actuator/health, port: 8080}

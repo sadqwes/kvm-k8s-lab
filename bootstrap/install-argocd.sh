@@ -2,11 +2,22 @@
 set -e
 
 echo "🚀 Installing ArgoCD..."
-curl -L -o /tmp/argocd-install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+# Фиксируем версию ArgoCD (избегаем нестабильности с "stable" тегом)
+ARGOCD_VERSION="v3.5.1"
+
+# Создаём namespace
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply --server-side=false -n argocd -f /tmp/argocd-install.yaml \
-  || echo "⚠️  Known non-fatal: applicationsets CRD too long"
+
+# ApplicationSet CRD отдельно (server-side apply обходит лимит 256 KiB аннотаций)
+echo "📦 Installing ApplicationSet CRD..."
+kubectl apply --server-side -f "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/crds/applicationset-crd.yaml"
+kubectl wait --for=condition=established --timeout=60s crd/applicationsets.argoproj.io
+
+# ArgoCD install (без CRD, они уже установлены)
+echo "📦 Installing ArgoCD components..."
+curl -L -o /tmp/argocd-install.yaml "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
+kubectl apply -n argocd -f /tmp/argocd-install.yaml
 
 echo "⏳ Waiting for ArgoCD server..."
 kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd

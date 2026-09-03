@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/sadqwes/knowledge-graph-api:b9e6311
+          image: ghcr.io/sadqwes/knowledge-graph-api:9358500
           ports:
             - containerPort: 8080
           env:

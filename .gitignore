@@ -2,23 +2,46 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
 crash.log
 terraform.tfvars
 secrets.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
 
 # Ansible
-ansible/inventory.ini
-ansible/.kube/
+**/inventory.ini
+**/inventory.ini.tpl    # на всякий случай, если вдруг появится
+
+# Ansible runtime
+**/.kube/
 *.retry
+**/.ansible/
 
 # kubeconfig
 **/.kube/
+*.kubeconfig
 
 # OS
 .DS_Store
+Thumbs.db
 
 # certs
 certs/
+**/*.pem
+!**/sealed-secrets.pem    # публичный cert - оставить в git
 
-# idea
+# IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets
+**/secrets.yaml
+**/secret.yaml
+*.key

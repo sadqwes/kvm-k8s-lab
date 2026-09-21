@@ -19,3 +19,6 @@ ansible/.kube/
 
 # certs
 certs/
+
+# idea
+.idea/

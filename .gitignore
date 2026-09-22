@@ -30,7 +30,7 @@ Thumbs.db
 certs/
 **/*.pem
 
-# публичный cert kubeseal — остаётся в git
+# публичный cert kubeseal — остаётся в git (negation ДОЛЖЕН быть без inline-комментария)
 !**/sealed-secrets.pem
 
 # IDE

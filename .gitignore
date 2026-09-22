@@ -15,12 +15,8 @@ terraform.rc
 
 # Ansible
 **/inventory.ini
-**/inventory.ini.tpl    # на всякий случай, если вдруг появится
-
-# Ansible runtime
-**/.kube/
-*.retry
 **/.ansible/
+*.retry
 
 # kubeconfig
 **/.kube/
@@ -33,7 +29,9 @@ Thumbs.db
 # certs
 certs/
 **/*.pem
-!**/sealed-secrets.pem    # публичный cert - оставить в git
+
+# публичный cert kubeseal — остаётся в git
+!**/sealed-secrets.pem
 
 # IDE
 .idea/

@@ -349,7 +349,7 @@ kubectl get pods -A | grep -vE 'Running|Completed'
 | 17 | FailedMount: secret not found при старте | pod стартовал раньше unseal | `rollout restart` после появления секрета |
 | 18 | jq: `Cannot iterate over null` при парсинге бэкапов | `velero backup get -o json` отдаёт массив без `.items` | брать через `kubectl get backups.velero.io -n velero -o json` |
 | 19 | `mc mirror`: `Overwrite not allowed (mm-source-mtime)` | локальная копия новее источника | для kopia-блобов безвредно, но `kopia.repository` и `kopia.blobcfg` должны обновляться — использовать `--overwrite` |
-| 20 | MinIO PVC 5Gi заполнился до 100% — Velero backups Failed, Deleting застряли, ArgoCD OutOfSync после live-патча | `df -h /export` в поде minio = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` по бакету → рестарт пода minio (освободил file descriptors) → PVC 5Gi→10Gi + reconcile манифеста в gitops → пересоздание BackupRepository после wipe → TTL schedules 720h→168h | 21.09.2026 |
+| 20 | MinIO PVC 5Gi заполнился до 100% — Velero backups Failed, Deleting застряли, ArgoCD OutOfSync после live-патча | `df -h /export` в поде minio = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` по бакету → рестарт пода minio (освободил file descriptors) → PVC 5Gi→10Gi + reconcile манифеста в gitops → пересоздание BackupRepository после wipe → TTL schedules 720h→168h 
 
 ## Уроки
 
@@ -391,7 +391,7 @@ MIT
 ---
 
 **Автор:** sadqwes
-**Дата:** 2026-08-31
+**Дата:** 2026-09-22
 **Статус:** Production-ready (DR tested ✅, auto-backup working ✅)
 
 ## Что дальше

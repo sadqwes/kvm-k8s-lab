@@ -10,7 +10,6 @@
 - **Автоматические бэкапы** — schedule в кластере + launchd-агент на Mac
 - **Проверенный DR** — полное воссоздание кластера с нуля и восстановление
 
-
 ## Архитектура
 
 ```
@@ -349,8 +348,8 @@ kubectl get pods -A | grep -vE 'Running|Completed'
 | 17 | FailedMount: secret not found при старте | pod стартовал раньше unseal | `rollout restart` после появления секрета |
 | 18 | jq: `Cannot iterate over null` при парсинге бэкапов | `velero backup get -o json` отдаёт массив без `.items` | брать через `kubectl get backups.velero.io -n velero -o json` |
 | 19 | `mc mirror`: `Overwrite not allowed (mm-source-mtime)` | локальная копия новее источника | для kopia-блобов безвредно, но `kopia.repository` и `kopia.blobcfg` должны обновляться — использовать `--overwrite` |
-| 20 | MinIO PVC 5Gi заполнился до 100% — Velero backups Failed, Deleting застряли, ArgoCD OutOfSync после live-патча | `df -h /export` в поде minio = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` по бакету → рестарт пода minio (освободил file descriptors) → PVC 5Gi→10Gi + reconcile манифеста в gitops → пересоздание BackupRepository после wipe → TTL schedules 720h→168h 
-
+| 20 | MinIO PVC 5Gi заполнился до 100% — Velero backups Failed, Deleting застряли, ArgoCD OutOfSync после live-патча | `df -h /export` в поде minio = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` по бакету → рестарт пода minio (освободил file descriptors) → PVC 5Gi→10Gi + reconcile манифеста в gitops → пересоздание BackupRepository после wipe → TTL schedules 720h→168h  |
+ |
 ## Уроки
 
 ### Архитектурные
@@ -376,8 +375,18 @@ kubectl get pods -A | grep -vE 'Running|Completed'
 13. **Гонка при старте** — pod может стартовать раньше, чем SealedSecret расшифруется → рестарт пода после появления secret.
 14. **RWO volume конфликты** — при rollout restart использовать `rollout undo` или удалять старый pod первым.
 
-## TODO
+## Что дальше
 
+### По безопасности (knowledge-graph-api)
+- [ ] Акт 2 до конца: ужесточить гейты SAST/SCA (убрать `continue-on-error`) после зелёных фиксов
+- [ ] gitleaks в pre-commit и CI — слой secret scanning
+- [ ] Контрольный прогон OWASP ZAP baseline после фикса actuator: сравнить отчёты до/после
+- [ ] Prometheus-алерт на заполнение MinIO >80% — профилактика рецидива пункта 20
+- [ ] Dependabot/Renovate для авто-мониторинга CVE в зависимостях
+- [ ] Pin GitHub Actions to commit SHA (supply-chain hardening по находкам Semgrep)
+- [ ] DR-учение: полный restore namespace knowledge из backup на чистый контур
+
+### По инфраструктуре (kvm-k8s-lab)
 - [ ] CronJob pg_dump в MinIO (application-level бэкап postgres — дополнение к fs-backup)
 - [ ] cert-manager вместо ручного wildcard TLS
 - [ ] Регулярный backup-drill: restore в отдельный namespace/кластер
@@ -392,14 +401,5 @@ MIT
 
 **Автор:** sadqwes
 **Дата:** 2026-09-22
-**Статус:** Production-ready (DR tested ✅, auto-backup working ✅)
+**Статус:** DR проверен ✅, авто-бэкапы работают ✅
 
-## Что дальше
-
-- [ ] Акт 2 до конца: ужесточить гейты SAST/SCA (убрать `continue-on-error`) после зелёных фиксов
-- [ ] gitleaks в pre-commit и CI — слой secret scanning
-- [ ] Контрольный прогон OWASP ZAP baseline после фикса actuator: сравнить отчёты до/после
-- [ ] Prometheus-алерт на заполнение MinIO >80% — профилактика рецидива пункта 20
-- [ ] Dependabot/Renovate для авто-мониторинга CVE в зависимостях
-- [ ] Pin GitHub Actions to commit SHA (supply-chain hardening по находкам Semgrep)
-- [ ] DR-учение: полный restore namespace knowledge из backup на чистый контур

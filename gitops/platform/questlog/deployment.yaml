@@ -22,6 +22,8 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            - name: metrics # отдельный порт: в ingress не попадает, его скрейпит только Prometheus
+              containerPort: 9090
           env:
             - name: PGHOST
               value: questlog-postgres-postgresql.questlog.svc.cluster.local
@@ -36,6 +38,18 @@ spec:
                 secretKeyRef:
                   name: questlog-postgres-creds
                   key: password
+            - name: QUESTLOG_USER
+              value: sadqwes
+            - name: QUESTLOG_PASSWORD_HASH # bcrypt-хеш, сам пароль нигде не хранится
+              valueFrom:
+                secretKeyRef:
+                  name: questlog-auth
+                  key: password-hash
+            - name: QUESTLOG_API_TOKEN # токен для наставника (Claude), отзывается сменой секрета
+              valueFrom:
+                secretKeyRef:
+                  name: questlog-auth
+                  key: api-token
           readinessProbe:
             httpGet: {path: /readyz, port: http}
             periodSeconds: 5

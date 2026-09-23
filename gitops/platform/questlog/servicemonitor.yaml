@@ -9,6 +9,6 @@ spec:
   selector:
     matchLabels: {app: questlog}
   endpoints:
-    - port: http
+    - port: metrics
       path: /metrics
       interval: 30s

@@ -94,7 +94,7 @@ data:
             condition: C
             noDataState: NoData
             execErrState: Error
-            for: 5m
+            for: 1m
             annotations:
               summary: 'PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ humanize $values.B.Value }}% full'
             labels:
@@ -127,7 +127,7 @@ data:
                   conditions:
                     - evaluator:
                         params:
-                          - 80
+                          - 1
                         type: gt
                       operator:
                         type: and

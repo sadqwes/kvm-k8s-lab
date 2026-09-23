@@ -13,6 +13,8 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 65532 # nonroot из distroless; числовой UID нужен, чтобы kubelet мог проверить runAsNonRoot
+        runAsGroup: 65532
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: app

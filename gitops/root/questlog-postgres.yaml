@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: questlog-postgres
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: registry-1.docker.io/bitnamicharts
+    chart: postgresql
+    targetRevision: "18.8.9"
+    helm:
+      releaseName: questlog-postgres
+      values: |
+        auth:
+          existingSecret: questlog-postgres-creds
+          username: questlog
+          database: questlog
+        primary:
+          persistence:
+            enabled: true
+            storageClass: longhorn
+            size: 1Gi
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 256Mi}
+        readReplicas:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: questlog
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

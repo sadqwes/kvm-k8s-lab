@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: questlog
+  namespace: questlog
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: questlog}
+  template:
+    metadata:
+      labels: {app: questlog}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: app
+          image: ghcr.io/sadqwes/questlog:latest # CI заменяет тег на короткий SHA коммита
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: PGHOST
+              value: questlog-postgres-postgresql.questlog.svc.cluster.local
+            - name: PGUSER
+              value: questlog
+            - name: PGDATABASE
+              value: questlog
+            - name: PGSSLMODE
+              value: disable
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: questlog-postgres-creds
+                  key: password
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}

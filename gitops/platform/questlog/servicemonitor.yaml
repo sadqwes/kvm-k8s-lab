@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: questlog
+  namespace: questlog
+  labels:
+    release: prometheus # kube-prometheus-stack подхватывает только ServiceMonitor с этой меткой
+spec:
+  selector:
+    matchLabels: {app: questlog}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s

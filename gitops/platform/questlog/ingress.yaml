@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: questlog
+  namespace: questlog
+  annotations:
+    # Логин и пароль на весь сайт: приложение само авторизацию не делает
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: questlog-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "questlog"
+spec:
+  ingressClassName: nginx
+  # TLS появится на неделе 2 вместе с cert-manager (босс «Страж сертификатов»)
+  rules:
+    - host: questlog.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: questlog
+                port:
+                  name: http

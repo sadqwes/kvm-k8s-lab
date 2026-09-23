@@ -30,8 +30,7 @@ Cluster (Ubuntu 22.04, kubeadm 1.31, containerd, flannel):
  ├── MinIO           — S3 storage for backups
  ├── Velero          — cluster backups + kopia fs-backup of volumes
  ├── Monitoring      — Prometheus / Grafana / Loki / Promtail, alerting as code
- └── Workloads       — task-api + PostgreSQL (Bitnami chart),
-                       questlog + PostgreSQL (Go, deployed by CI)
+ └── Workloads       — questlog + PostgreSQL (Go, Bitnami chart, deployed by CI)
 
 Automatic backups:
  ├── In the cluster: velero schedule every 6 hours
@@ -58,7 +57,7 @@ kvm-k8s-lab/
 │   └── sealed-secrets.pem         # PUBLIC kubeseal certificate (not a secret)
 ├── gitops/
 │   ├── root/                      # ArgoCD Applications: longhorn, minio, velero, postgresql,
-│   │                              #   monitoring, loki, promtail, grafana-*, task-api,
+│   │                              #   monitoring, loki, promtail, grafana-*,
 │   │                              #   questlog, metallb-config, lab-ingresses, tls-wildcard, ...
 │   ├── platform/                  # platform manifests and SealedSecrets
 │   │                              #   (minio-credentials, velero-credentials, ...)
@@ -313,10 +312,10 @@ velero backup-location get    # wait for Available
 velero restore create --from-backup full-backup-1 --wait
 
 # 8. Resolve SealedSecrets ownership conflicts (restore brought back plain secrets without ownerReference)
-for ns in default ingress-nginx longhorn-system monitoring argocd; do
+for ns in ingress-nginx longhorn-system monitoring argocd; do
   kubectl delete secret tls-wildcard -n $ns --ignore-not-found
 done
-kubectl delete secret task-api-postgres -n default --ignore-not-found
+kubectl delete secret questlog-postgres-creds questlog-basic-auth -n questlog --ignore-not-found
 kubectl delete secret grafana-admin-password slack-webhook -n monitoring --ignore-not-found
 kubectl delete pod -n kube-system -l name=sealed-secrets-controller
 

@@ -96,7 +96,7 @@ data:
             condition: C
             noDataState: NoData
             execErrState: Error
-            for: 5m
+            for: 6m
             annotations:
               summary: 'PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ humanize $values.B.Value }}% full'
             labels:

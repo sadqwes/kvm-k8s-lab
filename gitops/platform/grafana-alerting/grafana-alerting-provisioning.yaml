@@ -84,3 +84,60 @@ data:
                   maxDataPoints: 43200
                   refId: C
                   type: threshold
+      - orgId: 1
+        name: storage
+        folder: alerts
+        interval: 1m
+        rules:
+          - uid: pvc-filling-up
+            title: PVCFillingUp
+            condition: C
+            noDataState: NoData
+            execErrState: Error
+            for: 5m
+            annotations:
+              summary: 'PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ humanize $values.B.Value }}% full'
+            labels:
+              severity: warning
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  editorMode: code
+                  expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100
+                  instant: true
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                  expression: B
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: threshold

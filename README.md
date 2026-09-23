@@ -31,7 +31,7 @@ Cluster (Ubuntu 22.04, kubeadm 1.31, containerd, flannel):
  ├── Velero          — cluster backups + kopia fs-backup of volumes
  ├── Monitoring      — Prometheus / Grafana / Loki / Promtail, alerting as code
  └── Workloads       — task-api + PostgreSQL (Bitnami chart),
-                       knowledge-graph-api + PostgreSQL (deployed by CI)
+                       questlog + PostgreSQL (Go, deployed by CI)
 
 Automatic backups:
  ├── In the cluster: velero schedule every 6 hours
@@ -59,7 +59,7 @@ kvm-k8s-lab/
 ├── gitops/
 │   ├── root/                      # ArgoCD Applications: longhorn, minio, velero, postgresql,
 │   │                              #   monitoring, loki, promtail, grafana-*, task-api,
-│   │                              #   knowledge-graph, metallb-config, lab-ingresses, tls-wildcard, ...
+│   │                              #   questlog, metallb-config, lab-ingresses, tls-wildcard, ...
 │   ├── platform/                  # platform manifests and SealedSecrets
 │   │                              #   (minio-credentials, velero-credentials, ...)
 │   └── apps/                      # application manifests
@@ -379,14 +379,14 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 
 ## What's next
 
-### Security (knowledge-graph-api)
-- [ ] Finish stage 2: make SAST/SCA gates blocking (drop `continue-on-error`) once the fixes are green
+### Security (questlog)
+- [x] Blocking security gates in CI: Semgrep (SAST), govulncheck (SCA), Trivy (image) — questlog starts clean and stays clean
 - [ ] gitleaks in pre-commit and CI — a secret-scanning layer
-- [ ] Re-run the OWASP ZAP baseline after the actuator fix and compare reports before/after
+- [ ] OWASP ZAP baseline against https://questlog.local
 - [x] Alert when a PVC is >80% full — `PVCFillingUp` in Grafana alerting, covers MinIO and every other PVC (issue 20)
 - [ ] Dependabot/Renovate for automatic CVE monitoring of dependencies
-- [ ] Pin GitHub Actions to commit SHAs (supply-chain hardening based on Semgrep findings)
-- [ ] DR drill: full restore of the knowledge namespace from backup onto a clean environment
+- [ ] Pin the CI tool images (semgrep, trivy, golang) to digests — actions are already pinned to commit SHAs
+- [ ] DR drill: full restore of the questlog namespace from backup onto a clean environment
 
 ### Infrastructure (kvm-k8s-lab)
 - [ ] pg_dump CronJob into MinIO (application-level Postgres backup on top of fs-backup)

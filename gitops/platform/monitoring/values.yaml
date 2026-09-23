@@ -5,8 +5,11 @@ grafana:
     server:
       root_url: https://grafana.local
   envFromSecret: slack-webhook
-  extraConfigmapMounts:
-    - name: alerting-provisioning
-      configMap: grafana-alerting-provisioning
-      mountPath: /etc/grafana/provisioning/alerting
-      readOnly: true
+  # Alert rules / contact points / policies are picked up by the alerts sidecar
+  # from ConfigMaps labelled grafana_alert=1 (see gitops/platform/grafana-alerting)
+  # and hot-reloaded via the Grafana API — no pod restart needed.
+  sidecar:
+    alerts:
+      enabled: true
+      label: grafana_alert
+      labelValue: "1"

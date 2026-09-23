@@ -350,7 +350,7 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 | 17 | FailedMount: secret not found on start | the pod started before the secret was unsealed | `rollout restart` once the secret exists |
 | 18 | jq: `Cannot iterate over null` when parsing backups | `velero backup get -o json` returns an array without `.items` | use `kubectl get backups.velero.io -n velero -o json` |
 | 19 | `mc mirror`: `Overwrite not allowed (mm-source-mtime)` | the local copy is newer than the source | harmless for kopia blobs, but `kopia.repository` and `kopia.blobcfg` must be updated — use `--overwrite` |
-| 20 | MinIO 5Gi PVC hit 100% — Velero backups Failed, deletions stuck, ArgoCD OutOfSync after a live patch | `df -h /export` in the minio pod = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` on the bucket → restart the minio pod (released file descriptors) → PVC 5Gi→10Gi + reconcile the manifest in gitops → recreate BackupRepository after the wipe → schedule TTL 720h→168h |
+| 20 | MinIO 5Gi PVC hit 100% — Velero backups Failed, deletions stuck, ArgoCD OutOfSync after a live patch | `df -h /export` in the minio pod = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` on the bucket → restart the minio pod (released file descriptors) → PVC 5Gi→10Gi + reconcile the manifest in gitops → recreate BackupRepository after the wipe → schedule TTL 720h→168h → Grafana alert `PVCFillingUp` (any PVC >80% for 5m → Slack) |
 
 ## Lessons
 
@@ -383,7 +383,7 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 - [ ] Finish stage 2: make SAST/SCA gates blocking (drop `continue-on-error`) once the fixes are green
 - [ ] gitleaks in pre-commit and CI — a secret-scanning layer
 - [ ] Re-run the OWASP ZAP baseline after the actuator fix and compare reports before/after
-- [ ] Prometheus alert when MinIO is >80% full — to prevent a repeat of issue 20
+- [x] Alert when a PVC is >80% full — `PVCFillingUp` in Grafana alerting, covers MinIO and every other PVC (issue 20)
 - [ ] Dependabot/Renovate for automatic CVE monitoring of dependencies
 - [ ] Pin GitHub Actions to commit SHAs (supply-chain hardening based on Semgrep findings)
 - [ ] DR drill: full restore of the knowledge namespace from backup onto a clean environment
@@ -402,5 +402,5 @@ MIT
 ---
 
 **Author:** Elizaveta Sobal ([@sadqwes](https://github.com/sadqwes))
-**Updated:** 2026-09-22
+**Updated:** 2026-09-23
 **Status:** DR tested ✅, auto-backups working ✅

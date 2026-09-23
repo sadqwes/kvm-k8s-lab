@@ -18,7 +18,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: app
-          image: ghcr.io/sadqwes/questlog:4d8ac05 # CI заменяет тег на короткий SHA коммита
+          image: ghcr.io/sadqwes/questlog:2a51a30 # CI заменяет тег на короткий SHA коммита
           ports:
             - name: http
               containerPort: 8080

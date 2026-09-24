@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: minio-questlog-user
+  namespace: minio-system
+spec:
+  encryptedData:
+    secretKey: AgCQ6NpqGgjVj6F5ZnCNileSCjJoh/YuJTQ/60sqJL9HbbV2KukJS29i8N1WTtA0YZB0xV/oKL1/Bn5VM3Z3WNX8NV8ylH1YycRlF/3YFWGApzdop7RZNwSU0kHsI/nUNbZXTgog3DF0DFaedR253SQB4bwe/NTKU8Lh5VR0NLattCLabaxUrs74Yn+hFykAvCrveIVAUkxuetZAz6nK1k8hz94vZXFoLAw/ToGj8e2gwdFqS4Stc7i4NqyPw5Yxf1FdKgYu/2JU7leGDvV3ypAg5j9PLKyO2yn2Qf65tNM7xkctrYdYz4Dk4Mqp1iRXGrLnnQ93PVsPzpGXXXqvwEzFsG8igIjbhuRHHg/KQnsK5rokxNnRv1Ub+sQPo4imRPOD4gpn6ey+9I3rUG0HjprPoqafYzsCjsE30sglxpTqasHhq2LosKGBMvuiz40K4HrM/l8byQ5u6qhWCjqdpOzn5/JJBMdUgc7SJDK9nfgGX1Aj/1uHec08LKaVO1dHZFyK6bizI0Jnzx/mTFr1um9AmBmk1Nv3lYcjBvWDocWqyp28w9PoACuelpj/E1VeSg9Ue2gP/66H4Q/BYpmGGTQ2Zww1ZzkQXfBJ41vqAcf4dLSkOt2ogSDyZ4hCc4GRe1z661pj0adHU+Ny2ScsIofGQn4jyvG1qT7bpdQhCA33q/WVe6ZgLmQfbBz6zKORuBmcgol37qBXOANoJPDAUVjWR8c2Niy8jQ1xNZsG5UN+nu8/uhnUy//m+Z/0QWL4c98=
+  template:
+    metadata:
+      name: minio-questlog-user
+      namespace: minio-system

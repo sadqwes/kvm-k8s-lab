@@ -50,6 +50,17 @@ spec:
                 secretKeyRef:
                   name: questlog-auth
                   key: api-token
+            - name: S3_ENDPOINT # фото еды — в MinIO лабы
+              value: minio.minio-system.svc.cluster.local:9000
+            - name: S3_BUCKET
+              value: questlog-photos
+            - name: S3_ACCESS_KEY
+              value: questlog
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: questlog-s3
+                  key: secretKey
           readinessProbe:
             httpGet: {path: /readyz, port: http}
             periodSeconds: 5

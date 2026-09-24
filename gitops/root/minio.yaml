@@ -17,8 +17,25 @@ spec:
         image:
           repository: quay.io/minio/minio
           tag: RELEASE.2023-09-16T01-01-47Z
-        users: []
-        buckets: []
+        # Всё ниже создают post-install джобы чарта — декларативно, из git.
+        buckets:
+          - name: questlog-photos
+            policy: none      # закрытый bucket: фото отдаёт только questlog после входа
+            purge: false
+        policies:
+          - name: questlog-photos-rw
+            statements:
+              - effect: Allow
+                resources: ["arn:aws:s3:::questlog-photos"]
+                actions: ["s3:ListBucket", "s3:GetBucketLocation"]
+              - effect: Allow
+                resources: ["arn:aws:s3:::questlog-photos/*"]
+                actions: ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        users:
+          - accessKey: questlog  # доступ только к своему bucket, не root
+            existingSecret: minio-questlog-user
+            existingSecretKey: secretKey
+            policy: questlog-photos-rw
         svcaccts: []
         persistence:
           enabled: true

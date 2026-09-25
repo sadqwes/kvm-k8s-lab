@@ -48,8 +48,11 @@ resource "libvirt_domain" "vm" {
 
   cloudinit = libvirt_cloudinit_disk.init[count.index].id
 
+  # Attach straight to the host bridge. With network_id of a bridge-mode network
+  # libvirt stores the NIC as type=bridge anyway, so the provider showed a
+  # permanent in-place diff (bridge "br0" -> null, + network_id) on every plan.
   network_interface {
-    network_id     = libvirt_network.lab.id
+    bridge         = "br0"
     mac            = var.nodes[count.index].mac
     wait_for_lease = false
   }

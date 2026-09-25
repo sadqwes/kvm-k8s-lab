@@ -17,7 +17,7 @@ Mac (terraform / ansible / kubectl / mc, backup copy in ~/velero-backups)
  │  qemu+ssh (192.168.31.110)
  ▼
 KVM host, bridge br0
- ├── k8s-control-plane  192.168.31.111   (40 GiB, 8 GiB RAM, 2 vCPU, host-passthrough)
+ ├── k8s-control-plane  192.168.31.111   (80 GiB, 8 GiB RAM, 2 vCPU, host-passthrough)
  ├── k8s-worker01       192.168.31.112
  └── k8s-worker02       192.168.31.113
 
@@ -43,7 +43,7 @@ Automatic backups:
 kvm-k8s-lab/
 ├── terraform/
 │   ├── main.tf                    # VMs, disks, cloud-init, Ansible inventory generation
-│   ├── variables.tf               # node list (ip/mac/ram/vcpu), vm_disk_size = 40 GiB
+│   ├── variables.tf               # node list (ip/mac/ram/vcpu), vm_disk_size = 80 GiB
 │   ├── terraform.tfvars.example   # copy to terraform.tfvars (gitignored): libvirt_uri, key paths
 │   ├── cloud_init.cfg.tpl         # user ubuntu, ssh key, sysctl/modprobe for k8s
 │   ├── network_config.tpl         # static IPs
@@ -282,6 +282,8 @@ launchctl list | grep velero
 ## Disaster Recovery Runbook
 
 Tested scenario: `terraform destroy` → VMs recreated → cluster from scratch → restore.
+
+> VM disks are protected with `lifecycle { prevent_destroy = true }` in `terraform/main.tf`. For a deliberate rebuild, remove that block first — otherwise `terraform destroy` stops with an error.
 
 ```bash
 # 1. New VMs

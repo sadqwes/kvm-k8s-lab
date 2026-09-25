@@ -17,6 +17,12 @@ resource "libvirt_volume" "vm_disk" {
   pool           = "default"
   base_volume_id = libvirt_volume.base_image.id
   size           = var.vm_disk_size
+
+  # A change to size/base volume would destroy the disk with all node data.
+  # For a deliberate rebuild (DR drill) remove this block first.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "libvirt_cloudinit_disk" "init" {

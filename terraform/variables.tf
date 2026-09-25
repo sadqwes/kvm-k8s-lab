@@ -33,5 +33,6 @@ variable "base_image_url" {
 }
 
 variable "vm_disk_size" {
-  default = 42949672960
+  description = "VM disk size in bytes (80 GiB). Grown online from 40 GiB with virsh blockresize + growpart/resize2fs; must match the real disk size, otherwise the provider (0.8.x, size is ForceNew) plans to recreate every disk"
+  default     = 85899345920
 }

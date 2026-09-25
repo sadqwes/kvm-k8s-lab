@@ -351,7 +351,11 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 | 17 | FailedMount: secret not found on start | the pod started before the secret was unsealed | `rollout restart` once the secret exists |
 | 18 | jq: `Cannot iterate over null` when parsing backups | `velero backup get -o json` returns an array without `.items` | use `kubectl get backups.velero.io -n velero -o json` |
 | 19 | `mc mirror`: `Overwrite not allowed (mm-source-mtime)` | the local copy is newer than the source | harmless for kopia blobs, but `kopia.repository` and `kopia.blobcfg` must be updated — use `--overwrite` |
-| 20 | MinIO 5Gi PVC hit 100% — Velero backups Failed, deletions stuck, ArgoCD OutOfSync after a live patch | `df -h /export` in the minio pod = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` on the bucket → restart the minio pod (released file descriptors) → PVC 5Gi→10Gi + reconcile the manifest in gitops → recreate BackupRepository after the wipe → schedule TTL 720h→168h → Grafana alert `PVCFillingUp` (any PVC >80% for 5m → Slack) |
+| 20 | MinIO 5Gi PVC hit 100% — Velero backups Failed, deletions stuck, ArgoCD OutOfSync after a live patch | `df -h /export` in the minio pod = 100%; `velero backup get` = Failed/Deleting; diff live 10Gi vs desired 5Gi | `mc rm --recursive` on the bucket → restart the minio pod (released file descriptors) → PVC 5Gi→10Gi + reconcile the manifest in gitops → delete **every** BackupRepository after the wipe (see 21) → schedule TTL 720h→168h → Grafana alert `PVCFillingUp` (any PVC >80% for 5m → Slack) |
+| 21 | Backups silently `PartiallyFailed` for 3 days; `podvolumebackups`: `repository not initialized in the provided storage` | after the bucket wipe (issue 20) only one `BackupRepository` was recreated — the rest still said `Ready` but pointed to kopia repos that no longer existed; MinIO at 1%, so `PVCFillingUp` stayed silent | delete the stale objects (`kubectl -n velero delete backuprepositories.velero.io -l velero.io/volume-namespace=<ns>`, data is not touched) → test with `velero backup create <name> --from-schedule periodic-backup` → `Completed`. A plain `velero backup create` has FS backup off, so it doesn't exercise kopia at all |
+| 22 | `kubectl logs deploy/velero` shows kopia noise, no server errors | the Deployment selector also matches node-agent pods (`Found 33 pods, using pod/node-agent-…`) | read the server by pod name: `kubectl -n velero get pods` → `kubectl -n velero logs velero-<hash>` |
+| 23 | Longhorn volume `Degraded`, `precheck new replica failed: insufficient storage` (not visible in `describe pvc`) | 40 GiB VM disks; after the MinIO PVC grew to 10Gi the second worker failed the 25% minimal-available check | grow disks online: `virsh blockresize <vm> vda 80G` on the host → `growpart /dev/vda 1` + `resize2fs /dev/vda1` in the VM → Longhorn rebuilds the replica. Then `vm_disk_size = 85899345920` in Terraform (provider 0.8: `size` is ForceNew — never apply with the old value) + `prevent_destroy` |
+| 24 | `terraform plan` always shows `network_interface: - bridge = "br0" + network_id` on every VM | with `network_id` of a bridge-mode libvirt network, libvirt stores the NIC as `type=bridge` → permanent drift | describe the NIC as `bridge = "br0"` → `No changes` |
 
 ## Lessons
 
@@ -377,6 +381,9 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 12. **Ownership conflicts** — after a restore, delete plain secrets that conflict with SealedSecrets.
 13. **Startup race** — a pod can start before its SealedSecret is decrypted → restart the pod once the secret exists.
 14. **RWO volume conflicts** — on rollout restart use `rollout undo`, or delete the old pod first.
+15. **Alert on backup status, not only on disk space.** For three days every backup was `PartiallyFailed` while storage was at 1% — nothing fired.
+16. **A test backup must match the schedule.** Use `--from-schedule`, otherwise volumes are skipped and the test proves nothing.
+17. **Terraform must describe reality before the next `plan`.** After a manual change (disk resize) update the code first and check `plan` = `No changes`; `prevent_destroy` guards the disks.
 
 ## What's next
 

@@ -1,5 +1,5 @@
 {
-  "title": "Бэкапы: Velero, MinIO, Mac",
+  "title": "Backups: Velero, MinIO, Mac",
   "uid": "velero-backups",
   "tags": [
     "backup",
@@ -7,7 +7,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "refresh": "1m",
   "time": {
@@ -24,7 +24,7 @@
     {
       "id": 1,
       "type": "row",
-      "title": "Сейчас",
+      "title": "Now",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -37,8 +37,8 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "Последний успешный бэкап",
-      "description": "Сколько времени прошло с последнего Completed-бэкапа по расписанию periodic-backup (каждые 6 ч). Жёлтый > 7 ч, красный > 13 ч — значит, пропущены запуски.",
+      "title": "Last successful backup",
+      "description": "Time since the last Completed backup of the periodic-backup schedule (runs every 6 h). Yellow > 7 h, red > 13 h: scheduled runs were missed or failed.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -52,7 +52,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "time() - max(velero_backup_last_successful_timestamp{schedule=\"periodic-backup\"})",
+          "expr": "time() - max(velero_backup_last_successful_timestamp{schedule=~\".*periodic-backup\"})",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -96,7 +96,7 @@
             ]
           },
           "mappings": [],
-          "noValue": "нет данных"
+          "noValue": "no data"
         },
         "overrides": []
       }
@@ -104,8 +104,8 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Статус последнего бэкапа",
-      "description": "Фаза самого свежего бэкапа (по времени старта). Всё, кроме Completed, — повод заглянуть в таблицу ниже.",
+      "title": "Latest backup status",
+      "description": "Phase of the most recent backup (by start time). Anything but Completed: check the tables below.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -119,7 +119,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(kube_velero_backup_status_phase{phase=\"Completed\"} * on(name) group_left() (kube_velero_backup_start_timestamp == scalar(max(kube_velero_backup_start_timestamp))))",
+          "expr": "max by (name) (kube_velero_backup_status_phase{phase=\"Completed\"}) and on (name) (max by (name) (kube_velero_backup_start_timestamp) == scalar(max(kube_velero_backup_start_timestamp)))",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -164,16 +164,18 @@
               "options": {
                 "1": {
                   "text": "Completed",
-                  "color": "green"
+                  "color": "green",
+                  "index": 0
                 },
                 "0": {
-                  "text": "НЕ Completed",
-                  "color": "red"
+                  "text": "NOT Completed",
+                  "color": "red",
+                  "index": 1
                 }
               }
             }
           ],
-          "noValue": "нет данных"
+          "noValue": "no data"
         },
         "overrides": []
       }
@@ -181,8 +183,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Бэкапов в MinIO",
-      "description": "Сколько бэкапов сейчас хранится (объекты Backup в кластере). TTL 7 дней: старые удаляются сами.",
+      "title": "Backups in MinIO",
+      "description": "Backup objects that exist right now. Old ones are deleted when their TTL expires (see the Expires column).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -196,7 +198,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "count(kube_velero_backup_info)",
+          "expr": "count(max by (name) (kube_velero_backup_info))",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -232,7 +234,7 @@
             ]
           },
           "mappings": [],
-          "noValue": "нет данных"
+          "noValue": "no data"
         },
         "overrides": []
       }
@@ -240,8 +242,8 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "MinIO заполнен",
-      "description": "Заполненность тома MinIO. Алерт PVCFillingUp срабатывает при 80%.",
+      "title": "MinIO usage",
+      "description": "How full the MinIO volume is. The PVCFillingUp alert fires at 80%.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -299,7 +301,7 @@
             ]
           },
           "mappings": [],
-          "noValue": "нет данных",
+          "noValue": "no data",
           "decimals": 1
         },
         "overrides": []
@@ -308,8 +310,8 @@
     {
       "id": 6,
       "type": "stat",
-      "title": "Копия на маке: давность",
-      "description": "Сколько прошло с последнего mc mirror на Mac. Данные присылает launchd-скрипт через Pushgateway.",
+      "title": "Mac copy: age",
+      "description": "Time since the last mc mirror to the Mac. Pushed by the launchd script via Pushgateway.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -367,7 +369,7 @@
             ]
           },
           "mappings": [],
-          "noValue": "нет данных"
+          "noValue": "no data"
         },
         "overrides": []
       }
@@ -375,8 +377,8 @@
     {
       "id": 7,
       "type": "stat",
-      "title": "Копия на маке: размер",
-      "description": "Размер папки ~/velero-backups на Mac.",
+      "title": "Mac copy: size",
+      "description": "Size of ~/velero-backups on the Mac.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -426,7 +428,7 @@
             ]
           },
           "mappings": [],
-          "noValue": "нет данных"
+          "noValue": "no data"
         },
         "overrides": []
       }
@@ -434,7 +436,7 @@
     {
       "id": 8,
       "type": "row",
-      "title": "Какие бэкапы есть",
+      "title": "Backups",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -447,8 +449,8 @@
     {
       "id": 9,
       "type": "table",
-      "title": "Бэкапы в MinIO",
-      "description": "Каждая строка — объект Backup в кластере (а значит, бэкап в бакете velero-backups). Свежие сверху.",
+      "title": "Backups in MinIO",
+      "description": "One row per Backup object (= one backup in the velero-backups bucket), newest first.\nVolume data: bytes of all volumes kopia processed for this backup. Kopia deduplicates, so real MinIO usage grows by much less — see MinIO usage.\nErrors > 0 or a failure reason: see Failed volumes below.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -456,13 +458,13 @@
       "gridPos": {
         "x": 0,
         "y": 7,
-        "w": 15,
-        "h": 11
+        "w": 24,
+        "h": 10
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "kube_velero_backup_info",
+          "expr": "max by (name, phase, schedule, failure_reason) (kube_velero_backup_info)",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -474,7 +476,7 @@
         },
         {
           "refId": "B",
-          "expr": "kube_velero_backup_start_timestamp * 1000",
+          "expr": "max by (name) (kube_velero_backup_start_timestamp) * 1000",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -486,7 +488,7 @@
         },
         {
           "refId": "C",
-          "expr": "kube_velero_backup_expiration_timestamp * 1000",
+          "expr": "max by (name) (kube_velero_backup_items_backed_up)",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -498,7 +500,7 @@
         },
         {
           "refId": "D",
-          "expr": "kube_velero_backup_items_backed_up",
+          "expr": "max by (name) (kube_velero_backup_errors)",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -510,7 +512,19 @@
         },
         {
           "refId": "E",
-          "expr": "kube_velero_backup_errors",
+          "expr": "sum by (name) (label_replace(kube_velero_podvolumebackup_bytes_done, \"name\", \"$1\", \"backup\", \"(.*)\"))",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "expr": "max by (name) (kube_velero_backup_expiration_timestamp) * 1000",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -531,36 +545,29 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "namespace": true,
-              "customresource_group": true,
-              "customresource_kind": true,
-              "customresource_version": true,
-              "job": true,
-              "instance": true,
-              "service": true,
-              "pod": true,
-              "endpoint": true,
-              "container": true,
-              "Value #A": true,
-              "__name__": true
+              "Value #A": true
             },
             "indexByName": {
               "name": 0,
               "phase": 1,
               "Value #B": 2,
-              "Value #D": 3,
-              "Value #E": 4,
-              "Value #C": 5,
-              "schedule": 6
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "failure_reason": 6,
+              "Value #F": 7,
+              "schedule": 8
             },
             "renameByName": {
-              "name": "Бэкап",
-              "phase": "Статус",
-              "Value #B": "Начало",
-              "Value #C": "Удалится",
-              "Value #D": "Объектов",
-              "Value #E": "Ошибок",
-              "schedule": "Расписание"
+              "name": "Backup",
+              "phase": "Status",
+              "Value #B": "Started",
+              "Value #C": "Objects",
+              "Value #D": "Errors",
+              "Value #E": "Volume data",
+              "failure_reason": "Failure reason",
+              "Value #F": "Expires",
+              "schedule": "Schedule"
             }
           }
         },
@@ -569,7 +576,7 @@
           "options": {
             "sort": [
               {
-                "field": "Начало",
+                "field": "Started",
                 "desc": true
               }
             ]
@@ -593,7 +600,91 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Статус"
+              "options": "Backup"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 290
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Objects"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Volume data"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Expires"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
             },
             "properties": [
               {
@@ -603,24 +694,24 @@
                     "type": "value",
                     "options": {
                       "Completed": {
-                        "text": "Completed",
-                        "color": "green"
+                        "color": "green",
+                        "index": 0
                       },
                       "PartiallyFailed": {
-                        "text": "PartiallyFailed",
-                        "color": "orange"
+                        "color": "orange",
+                        "index": 1
                       },
                       "Failed": {
-                        "text": "Failed",
-                        "color": "red"
+                        "color": "red",
+                        "index": 2
                       },
                       "InProgress": {
-                        "text": "InProgress",
-                        "color": "blue"
+                        "color": "blue",
+                        "index": 3
                       },
                       "Deleting": {
-                        "text": "Deleting",
-                        "color": "purple"
+                        "color": "purple",
+                        "index": 4
                       }
                     }
                   }
@@ -637,7 +728,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Начало"
+              "options": "Started"
             },
             "properties": [
               {
@@ -649,7 +740,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Удалится"
+              "options": "Expires"
             },
             "properties": [
               {
@@ -661,7 +752,19 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Ошибок"
+              "options": "Volume data"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
             },
             "properties": [
               {
@@ -694,22 +797,22 @@
     {
       "id": 10,
       "type": "table",
-      "title": "Бэкапы в копии на маке",
-      "description": "Папки в ~/velero-backups/backups на Mac после последнего mc mirror. Данные присылает launchd-скрипт через Pushgateway.",
+      "title": "Failed volumes",
+      "description": "Volumes that kopia could not back up (PodVolumeBackup in phase Failed), with the error message. This is why a backup ends up PartiallyFailed.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 15,
-        "y": 7,
-        "w": 9,
-        "h": 11
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 8
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "velero_offsite_backup_info",
+          "expr": "max by (backup, pod_namespace, pod, volume, message) (kube_velero_podvolumebackup_info{phase=\"Failed\"})",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -726,20 +829,21 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "Value": true,
-              "__name__": true,
-              "job": true,
-              "instance": true,
-              "exported_job": true,
-              "exported_instance": true,
-              "pod": true,
-              "namespace": true,
-              "service": true,
-              "endpoint": true,
-              "container": true
+              "Value": true
+            },
+            "indexByName": {
+              "backup": 0,
+              "pod_namespace": 1,
+              "pod": 2,
+              "volume": 3,
+              "message": 4
             },
             "renameByName": {
-              "backup": "Бэкап"
+              "backup": "Backup",
+              "pod_namespace": "Namespace",
+              "pod": "Pod",
+              "volume": "Volume",
+              "message": "Error"
             }
           }
         },
@@ -748,7 +852,7 @@
           "options": {
             "sort": [
               {
-                "field": "Бэкап",
+                "field": "Backup",
                 "desc": true
               }
             ]
@@ -761,19 +865,68 @@
       },
       "fieldConfig": {
         "defaults": {
-          "noValue": "нет данных — скрипт на маке ещё не присылал"
+          "noValue": "no failed volumes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Backup"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 290
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pod"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Volume"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          }
+        ]
       }
     },
     {
       "id": 11,
       "type": "row",
-      "title": "История",
+      "title": "Mac copy",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 18,
+        "y": 25,
         "w": 24,
         "h": 1
       },
@@ -781,23 +934,101 @@
     },
     {
       "id": 12,
-      "type": "timeseries",
-      "title": "Результаты бэкапов по расписанию",
-      "description": "Сколько бэкапов periodic-backup завершилось каждым статусом за последние 6 часов. Счётчики Velero обнуляются при рестарте его пода.",
+      "type": "table",
+      "title": "Backups in the Mac copy",
+      "description": "Folders in ~/velero-backups/backups on the Mac after the last mc mirror. Pushed by the launchd script via Pushgateway.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 26,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (backup) (velero_offsite_backup_info)",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "renameByName": {
+              "backup": "Backup"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Backup",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "no data yet: the Mac script has not pushed anything"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "History",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Scheduled backup results",
+      "description": "How many periodic-backup runs ended with each status in the last 6 h. Velero counters reset when its pod restarts, so history starts when metrics were enabled.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 34,
         "w": 12,
         "h": 8
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(velero_backup_success_total{schedule=\"periodic-backup\"}[6h]))",
+          "expr": "sum(increase(velero_backup_success_total{schedule=~\".*periodic-backup\"}[6h]))",
           "legendFormat": "Completed",
           "datasource": {
             "type": "prometheus",
@@ -808,7 +1039,7 @@
         },
         {
           "refId": "B",
-          "expr": "sum(increase(velero_backup_partial_failure_total{schedule=\"periodic-backup\"}[6h]))",
+          "expr": "sum(increase(velero_backup_partial_failure_total{schedule=~\".*periodic-backup\"}[6h]))",
           "legendFormat": "PartiallyFailed",
           "datasource": {
             "type": "prometheus",
@@ -819,7 +1050,7 @@
         },
         {
           "refId": "C",
-          "expr": "sum(increase(velero_backup_failure_total{schedule=\"periodic-backup\"}[6h]))",
+          "expr": "sum(increase(velero_backup_failure_total{schedule=~\".*periodic-backup\"}[6h]))",
           "legendFormat": "Failed",
           "datasource": {
             "type": "prometheus",
@@ -845,8 +1076,7 @@
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
-            "lineWidth": 1,
-            "barAlignment": 0
+            "lineWidth": 1
           }
         },
         "overrides": [
@@ -899,17 +1129,17 @@
       }
     },
     {
-      "id": 13,
+      "id": 15,
       "type": "timeseries",
-      "title": "MinIO: сколько занято",
-      "description": "Занято на томе MinIO и его размер.",
+      "title": "MinIO: used space",
+      "description": "Used space and size of the MinIO volume. Gaps = the cluster was off.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 19,
+        "y": 34,
         "w": 12,
         "h": 8
       },
@@ -917,7 +1147,7 @@
         {
           "refId": "A",
           "expr": "max(kubelet_volume_stats_used_bytes{namespace=\"minio-system\"})",
-          "legendFormat": "занято",
+          "legendFormat": "used",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -928,7 +1158,7 @@
         {
           "refId": "B",
           "expr": "max(kubelet_volume_stats_capacity_bytes{namespace=\"minio-system\"})",
-          "legendFormat": "размер тома",
+          "legendFormat": "volume size",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -953,26 +1183,25 @@
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
-            "lineWidth": 1,
-            "barAlignment": 0
+            "lineWidth": 1
           }
         },
         "overrides": []
       }
     },
     {
-      "id": 14,
+      "id": 16,
       "type": "text",
-      "title": "Шпаргалка",
+      "title": "Cheat sheet",
       "gridPos": {
         "x": 0,
-        "y": 27,
+        "y": 42,
         "w": 24,
         "h": 8
       },
       "options": {
         "mode": "markdown",
-        "content": "**Где что смотреть руками** (на маке, в терминале)\n\n| Что | Команда |\n|---|---|\n| Статус последних бэкапов | `kubectl -n velero get backups.velero.io --sort-by=.metadata.creationTimestamp -o custom-columns=NAME:.metadata.name,PHASE:.status.phase \\| tail -5` |\n| Какие тома не сохранились | `kubectl -n velero get podvolumebackups.velero.io -l velero.io/backup-name=<backup> \\| grep -v Completed` |\n| Место в MinIO | `kubectl -n minio-system exec deploy/minio -- df -h /export` |\n| Бэкапы на маке | `ls ~/velero-backups/backups/` и `du -sh ~/velero-backups` |\n| Лог launchd-агента | `tail -20 ~/velero-auto-backup.log` |\n| Тестовый бэкап | `velero backup create test-1 --from-schedule periodic-backup --wait` |\n"
+        "content": "**Check it by hand** (terminal on the Mac)\n\n| What | Command |\n|---|---|\n| Latest backups and their status | `kubectl -n velero get backups.velero.io --sort-by=.metadata.creationTimestamp -o custom-columns=NAME:.metadata.name,PHASE:.status.phase \\| tail -5` |\n| Why a backup failed | `kubectl -n velero get backups.velero.io <backup> -o jsonpath='{.status.failureReason}'` |\n| Volumes that were not saved | `kubectl -n velero get podvolumebackups.velero.io -l velero.io/backup-name=<backup> \\| grep -v Completed` |\n| MinIO disk usage | `kubectl -n minio-system exec deploy/minio -- df -h /export` |\n| Backups on the Mac | `ls ~/velero-backups/backups/` and `du -sh ~/velero-backups` |\n| launchd agent log | `tail -20 ~/velero-auto-backup.log` |\n| Test backup (same settings as the schedule) | `velero backup create test-1 --from-schedule periodic-backup --wait` |\n"
       }
     }
   ]

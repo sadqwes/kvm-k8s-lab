@@ -21,7 +21,7 @@ kube-state-metrics:
   rbac:
     extraRules:
       - apiGroups: ["velero.io"]
-        resources: ["backups"]
+        resources: ["backups", "podvolumebackups"]
         verbs: ["list", "watch"]
   customResourceState:
     enabled: true
@@ -46,6 +46,7 @@ kube-state-metrics:
                     labelsFromPath:
                       phase: [status, phase]
                       schedule: [metadata, labels, velero.io/schedule-name]
+                      failure_reason: [status, failureReason]
               - name: status_phase
                 help: "Velero backup phase (1 = current phase)"
                 each:
@@ -84,4 +85,33 @@ kube-state-metrics:
                   type: Gauge
                   gauge:
                     path: [status, errors]
+                    nilIsZero: true
+          # One PodVolumeBackup per volume per backup (kopia file system backup):
+          # which volumes failed and why, and how many bytes each volume had.
+          - groupVersionKind:
+              group: velero.io
+              version: v1
+              kind: PodVolumeBackup
+            metricNamePrefix: kube_velero_podvolumebackup
+            labelsFromPath:
+              name: [metadata, name]
+              backup: [metadata, labels, velero.io/backup-name]
+              pod_namespace: [spec, pod, namespace]
+              pod: [spec, pod, name]
+              volume: [spec, volume]
+            metrics:
+              - name: info
+                help: "Velero pod volume backup: phase and error message"
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      phase: [status, phase]
+                      message: [status, message]
+              - name: bytes_done
+                help: "Bytes of the volume processed by kopia"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, progress, bytesDone]
                     nilIsZero: true

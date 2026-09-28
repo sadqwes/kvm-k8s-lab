@@ -21,7 +21,7 @@ kube-state-metrics:
   rbac:
     extraRules:
       - apiGroups: ["velero.io"]
-        resources: ["backups", "podvolumebackups"]
+        resources: ["backups", "podvolumebackups", "schedules"]
         verbs: ["list", "watch"]
   customResourceState:
     enabled: true
@@ -115,3 +115,27 @@ kube-state-metrics:
                   gauge:
                     path: [status, progress, bytesDone]
                     nilIsZero: true
+          # Velero Schedule: cron, phase and when it last fired.
+          - groupVersionKind:
+              group: velero.io
+              version: v1
+              kind: Schedule
+            metricNamePrefix: kube_velero_schedule
+            labelsFromPath:
+              name: [metadata, name]
+            metrics:
+              - name: info
+                help: "Velero schedule: cron expression, phase, paused"
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      cron: [spec, schedule]
+                      phase: [status, phase]
+                      paused: [spec, paused]
+              - name: last_backup_timestamp
+                help: "When the schedule last created a backup, unix seconds"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, lastBackup]

@@ -7,7 +7,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": true,
   "refresh": "1m",
   "time": {
@@ -38,7 +38,7 @@
       "id": 2,
       "type": "stat",
       "title": "Last successful backup",
-      "description": "Time since the last Completed backup of the periodic-backup schedule (runs every 6 h). Yellow > 7 h, red > 13 h: scheduled runs were missed or failed.",
+      "description": "Time since the start of the newest Completed backup (any schedule, including ones created by the Mac script). Read from the Backup objects, so it survives Velero restarts. Velero runs every 6 h: yellow > 7 h, red > 13 h.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -52,7 +52,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "time() - max(velero_backup_last_successful_timestamp{schedule=~\".*periodic-backup\"})",
+          "expr": "time() - max(max by (name) (kube_velero_backup_start_timestamp) and on (name) (max by (name) (kube_velero_backup_status_phase{phase=\"Completed\"}) == 1))",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -434,13 +434,361 @@
       }
     },
     {
+      "id": 17,
+      "type": "row",
+      "title": "Next",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "stat",
+      "title": "Next Velero backup in",
+      "description": "Time until the next run of velero-periodic-backup. Computed from its cron 0 */6 * * * (UTC: 00, 06, 12, 18 = 03:00, 09:00, 15:00, 21:00 Minsk). If you change the cron in gitops/root/velero.yaml, change 21600 here too. If the cluster is off at that moment, Velero runs the missed backup right after start.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ceil(time() / 21600) * 21600 - time()",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "noValue": "no data"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 19,
+      "type": "stat",
+      "title": "Velero schedule",
+      "description": "The schedule object in the cluster (from gitops/root/velero.yaml): cron in UTC and its phase. Paused or not Enabled = no automatic backups.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 7,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (name, cron, phase) (kube_velero_schedule_info)",
+          "legendFormat": "{{cron}} UTC · {{phase}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "noValue": "no data"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Next Mac run in",
+      "description": "launchd starts the Mac script every 4 h: last run + 4 h. Negative = overdue: the Mac was asleep or off, launchd runs it on wake.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 7,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(velero_offsite_last_run_timestamp_seconds) + 14400 - time()",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "mappings": [],
+          "noValue": "no data"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "Next Mac run will",
+      "description": "The Mac script creates a backup itself only if there has been no Completed backup for 24 h (e.g. the cluster was off at the scheduled times). Otherwise it only mirrors MinIO to the Mac and reports here.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 7,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(time() - max(max by (name) (kube_velero_backup_start_timestamp) and on (name) (max by (name) (kube_velero_backup_status_phase{phase=\"Completed\"}) == 1))) > bool 86400",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "mirror only",
+                  "color": "blue",
+                  "index": 0
+                },
+                "1": {
+                  "text": "create a backup",
+                  "color": "orange",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "noValue": "no data"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Mac last run",
+      "description": "Result of the last Mac script run: mirror to ~/velero-backups succeeded or not. Details: tail ~/velero-auto-backup.log",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 7,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(velero_offsite_last_run_success)",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "FAILED",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "noValue": "no data"
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 8,
       "type": "row",
       "title": "Backups",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 6,
+        "y": 12,
         "w": 24,
         "h": 1
       },
@@ -457,7 +805,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 7,
+        "y": 13,
         "w": 24,
         "h": 10
       },
@@ -805,7 +1153,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 23,
         "w": 24,
         "h": 8
       },
@@ -926,7 +1274,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 25,
+        "y": 31,
         "w": 24,
         "h": 1
       },
@@ -943,7 +1291,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 26,
+        "y": 32,
         "w": 24,
         "h": 7
       },
@@ -1004,7 +1352,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 33,
+        "y": 39,
         "w": 24,
         "h": 1
       },
@@ -1021,7 +1369,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 34,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -1139,7 +1487,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 34,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -1195,13 +1543,13 @@
       "title": "Cheat sheet",
       "gridPos": {
         "x": 0,
-        "y": 42,
+        "y": 48,
         "w": 24,
         "h": 8
       },
       "options": {
         "mode": "markdown",
-        "content": "**Check it by hand** (terminal on the Mac)\n\n| What | Command |\n|---|---|\n| Latest backups and their status | `kubectl -n velero get backups.velero.io --sort-by=.metadata.creationTimestamp -o custom-columns=NAME:.metadata.name,PHASE:.status.phase \\| tail -5` |\n| Why a backup failed | `kubectl -n velero get backups.velero.io <backup> -o jsonpath='{.status.failureReason}'` |\n| Volumes that were not saved | `kubectl -n velero get podvolumebackups.velero.io -l velero.io/backup-name=<backup> \\| grep -v Completed` |\n| MinIO disk usage | `kubectl -n minio-system exec deploy/minio -- df -h /export` |\n| Backups on the Mac | `ls ~/velero-backups/backups/` and `du -sh ~/velero-backups` |\n| launchd agent log | `tail -20 ~/velero-auto-backup.log` |\n| Test backup (same settings as the schedule) | `velero backup create test-1 --from-schedule periodic-backup --wait` |\n"
+        "content": "**Check it by hand** (terminal on the Mac)\n\n| What | Command |\n|---|---|\n| Latest backups and their status | `kubectl -n velero get backups.velero.io --sort-by=.metadata.creationTimestamp -o custom-columns=NAME:.metadata.name,PHASE:.status.phase \\| tail -5` |\n| Why a backup failed | `kubectl -n velero get backups.velero.io <backup> -o jsonpath='{.status.failureReason}'` |\n| Volumes that were not saved | `kubectl -n velero get podvolumebackups.velero.io -l velero.io/backup-name=<backup> \\| grep -v Completed` |\n| MinIO disk usage | `kubectl -n minio-system exec deploy/minio -- df -h /export` |\n| Backups on the Mac | `ls ~/velero-backups/backups/` and `du -sh ~/velero-backups` |\n| launchd agent log | `tail -20 ~/velero-auto-backup.log` |\n| Test backup (same settings as the schedule) | `velero backup create test-1 --from-schedule velero-periodic-backup --wait` |\n| Run the Mac job now (don't wait 4 h) | `launchctl start com.sadqwes.velero-auto-backup` |\n"
       }
     }
   ]

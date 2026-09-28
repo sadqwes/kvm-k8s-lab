@@ -132,9 +132,8 @@ kill %1
 ### 7. Automatic backups
 
 ```bash
-# In-cluster schedule (every 6 hours)
-velero schedule create periodic-backup \
-  --schedule="0 */6 * * *" --ttl 168h --default-volumes-to-fs-backup
+# In-cluster schedule: in Git — gitops/root/velero.yaml, `schedules:` (chart name: velero-periodic-backup)
+#   every 6 h, ttl 168h, fs-backup, excludes minio-system (the storage itself) and monitoring
 
 # Mac launchd agent (every 4 hours)
 cat > ~/Library/LaunchAgents/com.sadqwes.velero-auto-backup.plist << 'EOF'

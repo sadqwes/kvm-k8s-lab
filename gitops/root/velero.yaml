@@ -34,6 +34,21 @@ spec:
             - name: default
               provider: csi
         snapshotsEnabled: true
+        # The schedule lives in Git (it used to be created by hand with `velero schedule create`,
+        # and its TTL silently stayed at 720h). The chart names it velero-periodic-backup.
+        schedules:
+          periodic-backup:
+            schedule: "0 */6 * * *"
+            template:
+              ttl: 168h
+              storageLocation: default
+              defaultVolumesToFsBackup: true
+              # minio-system: the backup storage itself — backing it up into itself made
+              #   every backup contain all previous ones (8.65 GiB per backup, MinIO 96%).
+              # monitoring: Prometheus TSDB and Loki chunks — not restored, everything else is in Git.
+              excludedNamespaces:
+                - minio-system
+                - monitoring
         # Velero server metrics (velero_backup_*) -> Prometheus.
         # release: prometheus is the label kube-prometheus-stack selects ServiceMonitors by.
         metrics:

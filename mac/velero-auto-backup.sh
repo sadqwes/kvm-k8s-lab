@@ -5,7 +5,8 @@
 #
 # 1. Cluster off -> skip quietly.
 # 2. No Completed backup for 24 h -> create one with the schedule's settings.
-# 3. Every run: mirror the whole bucket (backups + kopia) to ~/velero-backups.
+# 3. Every run: mirror the whole bucket (backups + kopia) to ~/velero-backups,
+#    and the questlog-photos bucket to ~/questlog-photos-backup.
 # 4. Push the result to Pushgateway -> Grafana dashboard "Backups: Velero, MinIO, Mac".
 # macOS /bin/bash is 3.2: no bash 4 features here.
 
@@ -15,7 +16,8 @@ LOG_FILE="$HOME/velero-auto-backup.log"
 exec >> "$LOG_FILE" 2>&1
 
 BACKUP_DIR="$HOME/velero-backups"
-SCHEDULE="periodic-backup"
+PHOTOS_DIR="$HOME/questlog-photos-backup"
+SCHEDULE="velero-periodic-backup"   # created by the Velero chart from gitops/root/velero.yaml
 MC_ALIAS="lab-minio"
 MINIO_PORT=19000   # not 9000/9091, so a manual port-forward in another terminal doesn't clash
 PGW_PORT=19091
@@ -104,6 +106,13 @@ if port_forward minio-system minio "$MINIO_PORT" 9000; then
     log "✅ Бакет скопирован в $BACKUP_DIR ($(du -sh "$BACKUP_DIR" | cut -f1))"
   else
     log "❌ mc mirror завершился с ошибкой"
+  fi
+  # questlog photos live in MinIO too. minio-system is excluded from Velero
+  # (it's the backup storage itself), so this Mac copy is their only backup.
+  if mc mirror --overwrite --quiet "$MC_ALIAS/questlog-photos/" "$PHOTOS_DIR/" >/dev/null; then
+    log "✅ questlog-photos скопирован в $PHOTOS_DIR ($(du -sh "$PHOTOS_DIR" | cut -f1))"
+  else
+    log "❌ mc mirror questlog-photos завершился с ошибкой"
   fi
 fi
 

@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pushgateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-pushgateway
+    targetRevision: "3.8.0"
+    helm:
+      releaseName: pushgateway
+      values: |
+        # Receives metrics from jobs outside the cluster (the launchd script on the Mac
+        # reports its off-site backup copy); Prometheus scrapes them from here.
+        # No ingress on purpose: Pushgateway has no auth, the Mac reaches it via kubectl port-forward.
+        fullnameOverride: pushgateway
+        serviceMonitor:
+          enabled: true
+          namespace: monitoring
+          additionalLabels:
+            release: prometheus
+          # keep job/instance labels as pushed by the Mac, not the pushgateway pod's
+          honorLabels: true
+        # Pushed metrics live in memory; persist them so a cluster restart
+        # doesn't blank the "Mac copy" panels until the next push.
+        persistentVolume:
+          enabled: true
+          storageClass: longhorn
+          size: 1Gi
+        extraArgs:
+          - --persistence.file=/data/pushgateway.data
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {memory: 64Mi}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

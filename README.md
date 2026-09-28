@@ -199,68 +199,16 @@ The cluster doesn't run all the time (the host PC gets switched off), so one str
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Auto-backup script (`~/velero-auto-backup.sh`)
+### Auto-backup script ([`mac/velero-auto-backup.sh`](mac/velero-auto-backup.sh))
 
-```bash
-#!/bin/bash
-set -e
+Installed with `cp mac/velero-auto-backup.sh ~/velero-auto-backup.sh`, run by launchd every 4 hours:
 
-LOG_FILE="$HOME/velero-auto-backup.log"
-exec >> "$LOG_FILE" 2>&1
-
-echo "=== $(date) ==="
-
-# Is the cluster reachable?
-if ! kubectl cluster-info &>/dev/null; then
-  echo "Cluster unreachable, skipping"
-  exit 0
-fi
-
-# Age of the last Completed backup.
-# NOTE: use kubectl — velero CLI -o json returns an array without .items
-LAST_BACKUP_TS=$(kubectl get backups.velero.io -n velero -o json 2>/dev/null | \
-  jq -r '[.items[] | select(.status.phase == "Completed")] |
-         sort_by(.status.startTimestamp) | reverse |
-         .[0].status.startTimestamp // empty')
-
-if [ -z "$LAST_BACKUP_TS" ]; then
-  echo "No completed backups yet, taking the first one"
-  AGE_HOURS=9999
-else
-  LAST_SEC=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_BACKUP_TS" "+%s" 2>/dev/null || echo "0")
-  NOW_SEC=$(date "+%s")
-  AGE_HOURS=$(( (NOW_SEC - LAST_SEC) / 3600 ))
-  echo "Last backup: $LAST_BACKUP_TS ($AGE_HOURS h ago)"
-fi
-
-if [ "$AGE_HOURS" -lt 24 ]; then
-  echo "Recent backup exists, skipping"
-  exit 0
-fi
-
-BACKUP_NAME="auto-$(date +%Y%m%d-%H%M%S)"
-echo "Creating backup $BACKUP_NAME..."
-
-if velero backup create "$BACKUP_NAME" --default-volumes-to-fs-backup --wait; then
-  echo "✅ Backup $BACKUP_NAME created, mirroring the WHOLE bucket to the Mac..."
-
-  kubectl port-forward -n minio-system svc/minio 9000:9000 &
-  PF_PID=$!
-  sleep 3
-
-  PASS=$(kubectl get secret minio-credentials -n minio-system -o jsonpath='{.data.rootPassword}' | base64 -d)
-  mc alias set local http://localhost:9000 admin "$PASS" 2>/dev/null || true
-
-  # NOTE: copy the WHOLE bucket (backups + kopia), --overwrite updates repository metadata
-  mc mirror --overwrite local/velero-backups/ "$HOME/velero-backups/"
-
-  kill $PF_PID 2>/dev/null || true
-  echo "✅ Done"
-else
-  echo "❌ Backup failed"
-  exit 1
-fi
-```
+1. Cluster unreachable (`kubectl get --raw /readyz`, 10 s timeout) → skip.
+2. No `Completed` backup for 24 h → `velero backup create --from-schedule periodic-backup`, then read the **real** phase (`velero --wait` exits 0 even for `PartiallyFailed`).
+3. **Every run** — mirror the whole bucket to `~/velero-backups` (port-forward to MinIO on a non-default port).
+4. Push the result to **Pushgateway** (port-forward, no ingress: Pushgateway has no auth) → the *Mac copy* panels of the Grafana dashboard *Backups: Velero, MinIO, Mac*:
+   - `velero_offsite_last_run_timestamp_seconds`, `velero_offsite_last_run_success` — every run;
+   - `velero_offsite_last_mirror_timestamp_seconds`, `velero_offsite_size_bytes`, `velero_offsite_backup_info{backup}` — after a successful mirror (`PUT` replaces the group, so the list always matches the folder).
 
 ### Local copy: always the whole bucket
 

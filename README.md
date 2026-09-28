@@ -303,6 +303,8 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 | 22 | `kubectl logs deploy/velero` shows kopia noise, no server errors | the Deployment selector also matches node-agent pods (`Found 33 pods, using pod/node-agent-…`) | read the server by pod name: `kubectl -n velero get pods` → `kubectl -n velero logs velero-<hash>` |
 | 23 | Longhorn volume `Degraded`, `precheck new replica failed: insufficient storage` (not visible in `describe pvc`) | 40 GiB VM disks; after the MinIO PVC grew to 10Gi the second worker failed the 25% minimal-available check | grow disks online: `virsh blockresize <vm> vda 80G` on the host → `growpart /dev/vda 1` + `resize2fs /dev/vda1` in the VM → Longhorn rebuilds the replica. Then `vm_disk_size = 85899345920` in Terraform (provider 0.8: `size` is ForceNew — never apply with the old value) + `prevent_destroy` |
 | 24 | `terraform plan` always shows `network_interface: - bridge = "br0" + network_id` on every VM | with `network_id` of a bridge-mode libvirt network, libvirt stores the NIC as `type=bridge` → permanent drift | describe the NIC as `bridge = "br0"` → `No changes` |
+| 25 | MinIO 96.7% full four days after cleanup; *Volume data* per backup 1.8 → 5.4 → 8.7 GiB | the schedule backed up **every** namespace, including `minio-system` — the volume that stores the backups, so each backup contained all previous ones. The schedule was made by hand with `--ttl 720h`; the 168h fix from issue 20 went only into the README, so nothing expired | MinIO PVC 10 → 20Gi for headroom → schedule moved into Git (`schedules:` in `gitops/root/velero.yaml`, ttl 168h, `excludedNamespaces: [minio-system, monitoring]`) → delete old backups by label (`velero backup delete --selector velero.io/schedule-name=periodic-backup`) → delete the now unused `BackupRepository` objects **first**, then their `kopia/<ns>/` data. Backup 8.65 GiB → 427 MiB, MinIO 96.7% → 2.1%. Found on the new Grafana dashboard *Backups: Velero, MinIO, Mac* |
+| 26 | launchd agent: `velero backup create` → `dial tcp 192.168.31.111:6443: no route to host`, while `kubectl` in the same run works | macOS Local Network privacy: under launchd (no Terminal) each binary needs its own permission to reach LAN addresses; `velero` never got it | create the backup with kubectl instead — a `Backup` object from the schedule's `spec.template` (see `mac/velero-auto-backup.sh`) |
 
 ## Lessons
 
@@ -331,6 +333,8 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 15. **Alert on backup status, not only on disk space.** For three days every backup was `PartiallyFailed` while storage was at 1% — nothing fired.
 16. **A test backup must match the schedule.** Use `--from-schedule`, otherwise volumes are skipped and the test proves nothing.
 17. **Terraform must describe reality before the next `plan`.** After a manual change (disk resize) update the code first and check `plan` = `No changes`; `prevent_destroy` guards the disks.
+18. **Never back up the backup storage into itself.** Exclude the namespace that holds the backups; data that can't be excluded with it (questlog photos in the same MinIO) needs its own copy — here, the Mac mirror.
+19. **Whatever creates backups lives in Git.** A hand-made schedule drifted from the README for weeks; in Git, ArgoCD keeps it exactly as written.
 
 ## What's next
 
@@ -347,7 +351,7 @@ The old sealed-secrets private key comes back from the backup (secret `sealed-se
 - [ ] pg_dump CronJob into MinIO (application-level Postgres backup on top of fs-backup)
 - [ ] cert-manager instead of the manual wildcard TLS
 - [ ] Regular backup drill: restore into a separate namespace/cluster
-- [ ] "DR readiness" dashboard in Grafana (age of last backup, BSL status, schedule status)
+- [x] Backups dashboard in Grafana (`Backups: Velero, MinIO, Mac`): last successful backup, every backup with status, failed volumes and size, MinIO usage, next Velero/Mac run, Mac copy via Pushgateway
 - [ ] Telegram notifications about auto-backup status (alertmanager → bot)
 
 ## License
@@ -357,5 +361,5 @@ MIT
 ---
 
 **Author:** Elizaveta Sobal ([@sadqwes](https://github.com/sadqwes))
-**Updated:** 2026-09-23
+**Updated:** 2026-09-28
 **Status:** DR tested ✅, auto-backups working ✅

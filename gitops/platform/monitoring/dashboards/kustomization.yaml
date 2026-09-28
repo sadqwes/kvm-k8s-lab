@@ -22,3 +22,8 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: dash-velero-backups
+    files: [velero-backups.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

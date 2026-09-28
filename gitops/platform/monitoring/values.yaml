@@ -13,3 +13,75 @@ grafana:
       enabled: true
       label: grafana_alert
       labelValue: "1"
+
+# kube-state-metrics turns Velero Backup objects into metrics (kube_velero_backup_*):
+# one series per backup with its name, phase and timestamps — this is what the
+# "Backups in MinIO" table on the Velero dashboard is built from.
+kube-state-metrics:
+  rbac:
+    extraRules:
+      - apiGroups: ["velero.io"]
+        resources: ["backups"]
+        verbs: ["list", "watch"]
+  customResourceState:
+    enabled: true
+    config:
+      kind: CustomResourceStateMetrics
+      spec:
+        resources:
+          - groupVersionKind:
+              group: velero.io
+              version: v1
+              kind: Backup
+            metricNamePrefix: kube_velero_backup
+            labelsFromPath:
+              name: [metadata, name]
+              namespace: [metadata, namespace]
+            metrics:
+              - name: info
+                help: "Velero backup: phase and schedule"
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      phase: [status, phase]
+                      schedule: [metadata, labels, velero.io/schedule-name]
+              - name: status_phase
+                help: "Velero backup phase (1 = current phase)"
+                each:
+                  type: StateSet
+                  stateSet:
+                    labelName: phase
+                    path: [status, phase]
+                    list: [New, FailedValidation, InProgress, WaitingForPluginOperations, WaitingForPluginOperationsPartiallyFailed, Finalizing, FinalizingPartiallyFailed, Completed, PartiallyFailed, Failed, Deleting]
+              - name: start_timestamp
+                help: "Backup start time, unix seconds"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, startTimestamp]
+              - name: completion_timestamp
+                help: "Backup completion time, unix seconds"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, completionTimestamp]
+              - name: expiration_timestamp
+                help: "When the backup expires (TTL), unix seconds"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, expiration]
+              - name: items_backed_up
+                help: "Kubernetes objects saved in the backup"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, progress, itemsBackedUp]
+              - name: errors
+                help: "Errors in the backup"
+                each:
+                  type: Gauge
+                  gauge:
+                    path: [status, errors]
+                    nilIsZero: true

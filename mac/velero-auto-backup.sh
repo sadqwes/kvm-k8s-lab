@@ -67,13 +67,28 @@ fi
 if [ "$AGE_HOURS" -ge "$MAX_AGE_HOURS" ]; then
   BACKUP_NAME="auto-$(date +%Y%m%d-%H%M%S)"
   log "Создаём бэкап $BACKUP_NAME (настройки расписания $SCHEDULE)..."
-  velero backup create "$BACKUP_NAME" --from-schedule "$SCHEDULE" --wait >/dev/null
-  # velero --wait exits 0 even for PartiallyFailed: read the real phase
-  PHASE=$(kubectl -n velero get backups.velero.io "$BACKUP_NAME" -o jsonpath='{.status.phase}' 2>/dev/null)
-  if [ "$PHASE" = "Completed" ]; then
-    log "✅ Бэкап $BACKUP_NAME: $PHASE"
+  # Same as `velero backup create --from-schedule`, but with kubectl: a Backup object
+  # built from the schedule's template. The velero CLI is not used on purpose — under
+  # launchd macOS Local Network privacy blocks it (no route to host), kubectl is allowed.
+  if kubectl -n velero get schedules.velero.io "$SCHEDULE" -o json \
+      | jq --arg n "$BACKUP_NAME" --arg s "$SCHEDULE" '{
+          apiVersion: "velero.io/v1", kind: "Backup",
+          metadata: {name: $n, namespace: "velero", labels: {"velero.io/schedule-name": $s}},
+          spec: .spec.template}' \
+      | kubectl create -f - >/dev/null; then
+    PHASE=""
+    for _ in $(seq 1 120); do   # up to 30 min
+      PHASE=$(kubectl -n velero get backups.velero.io "$BACKUP_NAME" -o jsonpath='{.status.phase}' 2>/dev/null)
+      case "$PHASE" in Completed|PartiallyFailed|Failed|FailedValidation) break ;; esac
+      sleep 15
+    done
+    if [ "$PHASE" = "Completed" ]; then
+      log "✅ Бэкап $BACKUP_NAME: Completed"
+    else
+      log "❌ Бэкап $BACKUP_NAME: ${PHASE:-нет статуса} — смотри дашборд, таблица Failed volumes"
+    fi
   else
-    log "❌ Бэкап $BACKUP_NAME: ${PHASE:-не создан} — смотри дашборд, таблица Failed volumes"
+    log "❌ Не удалось создать бэкап $BACKUP_NAME"
   fi
 fi
 

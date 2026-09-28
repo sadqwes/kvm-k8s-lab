@@ -464,7 +464,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "ceil(time() / 21600) * 21600 - time()",
+          "expr": "21600 - (vector(time()) % 21600)",
           "legendFormat": "",
           "datasource": {
             "type": "prometheus",
@@ -509,7 +509,7 @@
       "id": 19,
       "type": "stat",
       "title": "Velero schedule",
-      "description": "The schedule object in the cluster (from gitops/root/velero.yaml): cron in UTC and its phase. Paused or not Enabled = no automatic backups.",
+      "description": "The schedule object in the cluster (from gitops/root/velero.yaml): cron (UTC) and phase. Not Enabled = no automatic backups.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -523,14 +523,15 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max by (name, cron, phase) (kube_velero_schedule_info)",
-          "legendFormat": "{{cron}} UTC · {{phase}}",
+          "expr": "label_join(max by (cron, phase) (kube_velero_schedule_info), \"text\", \" · \", \"cron\", \"phase\")",
+          "legendFormat": "",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
           "instant": true,
-          "range": false
+          "range": false,
+          "format": "table"
         }
       ],
       "options": {
@@ -538,12 +539,12 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^text$/",
           "values": false
         },
         "colorMode": "background",
         "graphMode": "none",
-        "textMode": "name",
+        "textMode": "value",
         "justifyMode": "center"
       },
       "fieldConfig": {

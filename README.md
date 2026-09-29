@@ -150,6 +150,10 @@ cat > ~/Library/LaunchAgents/com.sadqwes.velero-auto-backup.plist << 'EOF'
     </array>
     <key>StartInterval</key>
     <integer>14400</integer>
+    <!-- also run right after login: StartInterval counts from load, so after
+         a reboot the first run would otherwise wait 4 hours -->
+    <key>RunAtLoad</key>
+    <true/>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
@@ -159,7 +163,8 @@ cat > ~/Library/LaunchAgents/com.sadqwes.velero-auto-backup.plist << 'EOF'
 </plist>
 EOF
 
-launchctl load ~/Library/LaunchAgents/com.sadqwes.velero-auto-backup.plist
+launchctl bootout gui/$(id -u)/com.sadqwes.velero-auto-backup 2>/dev/null   # if it was loaded before
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sadqwes.velero-auto-backup.plist
 ```
 
 ## Secrets: what lives where

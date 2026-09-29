@@ -1,0 +1,92 @@
+# Restore-тест бэкапа questlog: берёт самый свежий дамп из MinIO,
+# восстанавливает его во временную базу restore_test и сравнивает
+# число строк в каждой таблице с боевой базой. Боевую базу только читает.
+#
+# Не в gitops: запускается руками, когда нужно проверить бэкап.
+#   k create -f scripts/pg-restore-test.yaml
+#   k -n questlog logs -f job/<имя> -c restore
+#   k -n questlog delete job -l app=pg-restore-test
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: pg-restore-test-
+  namespace: questlog
+  labels: {app: pg-restore-test}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: {app: pg-restore-test}
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      volumes:
+        - name: dump
+          emptyDir: {sizeLimit: 1Gi}
+        - name: tmp
+          emptyDir: {}
+      initContainers:
+        - name: download
+          image: amazon/aws-cli:2.31.0
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              # Имена с датой → последний по алфавиту = самый свежий.
+              KEY=$(aws s3 ls s3://postgres-backups/questlog/ | awk '{print $4}' | sort | tail -1)
+              [ -n "$KEY" ] || { echo "в bucket'е нет дампов"; exit 1; }
+              aws s3 cp "s3://postgres-backups/questlog/$KEY" /dump/questlog.dump
+              echo "$KEY" > /dump/KEY
+          env:
+            - {name: AWS_ENDPOINT_URL, value: "http://minio.minio-system.svc.cluster.local:9000"}
+            - {name: AWS_DEFAULT_REGION, value: us-east-1}
+            - {name: AWS_ACCESS_KEY_ID, value: pgbackup}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: {secretKeyRef: {name: questlog-backup-s3, key: secretKey}}
+            - {name: HOME, value: /tmp}
+          volumeMounts:
+            - {name: dump, mountPath: /dump}
+            - {name: tmp, mountPath: /tmp}
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+      containers:
+        - name: restore
+          image: postgres:18.6-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              echo "дамп: $(cat /dump/KEY)"
+              psql -q -d postgres -c "DROP DATABASE IF EXISTS restore_test" -c "CREATE DATABASE restore_test"
+              pg_restore --no-owner --exit-on-error -d restore_test /dump/questlog.dump
+              echo "восстановлено. строки: бэкап / сейчас в боевой"
+              for t in $(psql -At -d restore_test -c "select tablename from pg_tables where schemaname='public' order by 1"); do
+                a=$(psql -At -d restore_test -c "select count(*) from \"$t\"")
+                b=$(psql -At -d questlog -c "select count(*) from \"$t\"")
+                printf '%-24s %6s / %s\n' "$t" "$a" "$b"
+              done
+              psql -q -d postgres -c "DROP DATABASE restore_test"
+              echo "OK: restore работает, restore_test удалена"
+          env:
+            - {name: PGHOST, value: questlog-postgres-postgresql}
+            - {name: PGUSER, value: postgres}
+            - name: PGPASSWORD
+              valueFrom: {secretKeyRef: {name: questlog-postgres-creds, key: postgres-password}}
+          volumeMounts:
+            - {name: dump, mountPath: /dump, readOnly: true}
+          securityContext:
+            runAsUser: 70
+            runAsGroup: 70
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}

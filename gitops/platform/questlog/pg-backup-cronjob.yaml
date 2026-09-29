@@ -51,8 +51,15 @@ spec:
                   set -eu
                   KEY="questlog/questlog-$(date -u +%Y-%m-%dT%H%M%SZ).dump"
                   aws s3 cp /dump/questlog.dump "s3://postgres-backups/$KEY"
-                  aws s3api put-bucket-lifecycle-configuration --bucket postgres-backups \
-                    --lifecycle-configuration '{"Rules":[{"ID":"expire-14d","Status":"Enabled","Filter":{"Prefix":"questlog/"},"Expiration":{"Days":14}}]}'
+                  # Храним 14 дней. Не lifecycle-правилом: MinIO 2023 требует Content-MD5,
+                  # а aws-cli 2.23+ шлёт CRC32 → MissingContentMD5. Удаляем старые сами.
+                  CUTOFF=$(date -u -d "14 days ago" +%Y-%m-%dT%H:%M:%S)
+                  OLD=$(aws s3api list-objects-v2 --bucket postgres-backups --prefix questlog/ \
+                    --query "Contents[?LastModified<\`$CUTOFF\`].Key" --output text)
+                  for k in $OLD; do
+                    [ "$k" = "None" ] && continue   # пустой список aws-cli печатает как None
+                    aws s3 rm "s3://postgres-backups/$k"
+                  done
                   aws s3 ls s3://postgres-backups/questlog/
               env:
                 - {name: AWS_ENDPOINT_URL, value: "http://minio.minio-system.svc.cluster.local:9000"}

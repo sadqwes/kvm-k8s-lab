@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: minio-pgbackup-user
+  namespace: minio-system
+spec:
+  encryptedData:
+    secretKey: AgBr5fFc/AQXGZTVJS142ltGeJkxBUDprACyjcERGyyP/8CPaYEOv2orGKogDThtOTjQFXAjlYw7pWoA4BhtRQW47NnlEx3phuJDMGl8M4a0Z4SbRV82FFINo75L3Du8WlrtTZrg0jRPWD+UFQGQdclxSm64cTLPIcTSKd2GHp0dhEq1ajyJ4f8hWkUXsjTbI3bEG1RSTpPzfUjVLtefv+/2u1uPfTyx6tDujjtc5H7fv6gg2amGnXwXDzYNH7Cp1A4M6miqRiRyCtHq0XmbxTMcx7vHFywOO1a8bcJ7e/oTIlA1tUXuduPylCjpIUskDZM4FR7X+bntKqwDL4WH34Ag/sXjwrdjZat+JTQ66QJDznrBXBOYEFUKqtwHOIkIFCHPAgWnpasQMpiAycYx1fYPSoip1BxqXh7i7QI33WsbAxGP8wRDx+fVyfmnJWVwO9Ucc86oUdkuLNcQAeXfmW722e0KAxHQghanIOPlY/laWLkX3nV66TTTDaiLDugWBRD+lLc7qobWu43ZGhGvsNhjm56cR8QccvYGttczcutiGrRAK+W6ZR9lHWXbaRvMvRWCopkyP8LxbCXc9uSpToa+EGbqx06UesWjXOmLSGN6bwzWsZlNVJqYLHiSZSiCzxyB1gV73AIeQnBYS9RWd3peTRzOEALBRcdjnyiKzEH3jNWmy0H7n09CwG69TSO1Rbo2jnJ1w6XJZDrOQ1stNYauX1gJ6B+iguoU1WzfQRz8lspWLmOTzVAqEITNeOklkrA=
+  template:
+    metadata:
+      name: minio-pgbackup-user
+      namespace: minio-system

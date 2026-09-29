@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: questlog-backup-s3
+  namespace: questlog
+spec:
+  encryptedData:
+    secretKey: AgCZB357x2+zepcQXkbPUDl81NMC5oP8smgVZXxkIC16TuhExqM0XG0H9ugZilWJOuhQu0febtFnUDsmJ521xSnrHMEEyWeJt22UrADIsNgYYApnRQWgpezapgdfoMkt5gGZBguBF8QDN0L/6aWg8oOUuU2cXt+Mq6dBT8VU7h/ZiMRxpAVG4Y2Ya8DYg+SuYLrNFlkTw9mjqx3vefVpCtEEEvEfK8bnKf2NZacqwuu6hMCPY9OMsmq8VKQd3BZgbNt77jPTpBQ0NLBoWRQ5vMzBodpabEbjAdhUrsncBfxy7JfEegP1TC+XAW+5t5IEcGdJ9ddkurK2wglvGiYFIImV9DJGKW7/LT3ei5AbsPWCud9FmyBb2ybjvrZrS25cUM6yZgSTpv4DohDmMrH0/UALqfsgvTEXNsQexVWgwOUWOKkjnYaNTPQ58FkFO+JtW1SCb7azlBfvn2m8E7BYKot2YENx2OOu0nIw8rexcjeDjpMGRC36KdnsK0ZyLrJzcKsj3oRttXRckymjGhcncmEtz3l0ygaq+1S2FgiTZkpque3m2p9ipX0pnGyzol0yVQAGUAsnoxh5lrqsaQROnvngcLCOYMJ04adYgXkz3GIQDMZce67GyWH0Blw+8IeKl00SGkLTgQ2L2wIXTOw8xZUhU7v7kMCBr8QHJaz8CJvckdypPg/+OXrSD+0YrJD804CfKcLz/yNhIoEqq7ahv7mNLj4GS/ZnkYnxmD5wH3C+Rmhf6iihqZHoR+hkgOosPWY=
+  template:
+    metadata:
+      name: questlog-backup-s3
+      namespace: questlog

@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: questlog-pg-backup
+  namespace: questlog
+spec:
+  schedule: "0 3 * * *"
+  timeZone: "Europe/Minsk"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 900
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}
+          volumes:
+            - name: dump
+              emptyDir: {sizeLimit: 1Gi}
+            - name: tmp
+              emptyDir: {}
+          initContainers:
+            - name: pg-dump
+              image: postgres:18.6-alpine
+              command: ["sh", "-c", "pg_dump --format=custom --file=/dump/questlog.dump && ls -l /dump"]
+              env:
+                - {name: PGHOST, value: questlog-postgres-postgresql}
+                - {name: PGUSER, value: questlog}
+                - {name: PGDATABASE, value: questlog}
+                - name: PGPASSWORD
+                  valueFrom: {secretKeyRef: {name: questlog-postgres-creds, key: password}}
+              volumeMounts: [{name: dump, mountPath: /dump}]
+              securityContext:
+                runAsUser: 70
+                runAsGroup: 70
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: ["ALL"]}
+          containers:
+            - name: upload
+              image: amazon/aws-cli:2.31.0
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  KEY="questlog/questlog-$(date -u +%Y-%m-%dT%H%M%SZ).dump"
+                  aws s3 cp /dump/questlog.dump "s3://postgres-backups/$KEY"
+                  aws s3api put-bucket-lifecycle-configuration --bucket postgres-backups \
+                    --lifecycle-configuration '{"Rules":[{"ID":"expire-14d","Status":"Enabled","Filter":{"Prefix":"questlog/"},"Expiration":{"Days":14}}]}'
+                  aws s3 ls s3://postgres-backups/questlog/
+              env:
+                - {name: AWS_ENDPOINT_URL, value: "http://minio.minio-system.svc.cluster.local:9000"}
+                - {name: AWS_DEFAULT_REGION, value: us-east-1}
+                - {name: AWS_ACCESS_KEY_ID, value: pgbackup}
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom: {secretKeyRef: {name: questlog-backup-s3, key: secretKey}}
+                - {name: HOME, value: /tmp}
+              volumeMounts:
+                - {name: dump, mountPath: /dump, readOnly: true}
+                - {name: tmp, mountPath: /tmp}
+              securityContext:
+                runAsUser: 1000
+                runAsGroup: 1000
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: ["ALL"]}

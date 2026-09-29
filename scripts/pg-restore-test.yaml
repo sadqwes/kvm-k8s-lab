@@ -70,16 +70,25 @@ spec:
               psql -q -d postgres -c "DROP DATABASE IF EXISTS restore_test" -c "CREATE DATABASE restore_test"
               pg_restore --no-owner --exit-on-error -d restore_test /dump/questlog.dump
               echo "восстановлено. строки: бэкап / сейчас в боевой"
+              TABLES=0; DIFF=0
               for t in $(psql -At -d restore_test -c "select tablename from pg_tables where schemaname='public' order by 1"); do
                 a=$(psql -At -d restore_test -c "select count(*) from \"$t\"")
                 b=$(psql -At -d questlog -c "select count(*) from \"$t\"")
                 printf '%-24s %6s / %s\n' "$t" "$a" "$b"
+                TABLES=$((TABLES + 1)); [ "$a" = "$b" ] || DIFF=$((DIFF + 1))
               done
               psql -q -d postgres -c "DROP DATABASE restore_test"
               echo "OK: restore работает, restore_test удалена"
+              # Для Grafana. Расхождения не обязательно ошибка: с момента дампа
+              # в боевой могли появиться новые строки.
+              wget -qO- --timeout=10 --post-data="questlog_pg_restore_last_success_timestamp_seconds $(date +%s)
+              questlog_pg_restore_tables $TABLES
+              questlog_pg_restore_tables_differ $DIFF
+              " "$PUSHGATEWAY_URL/metrics/job/questlog_pg_restore" || echo "warn: push to Pushgateway failed"
           env:
             - {name: PGHOST, value: questlog-postgres-postgresql}
             - {name: PGUSER, value: postgres}
+            - {name: PUSHGATEWAY_URL, value: "http://pushgateway.monitoring.svc.cluster.local:9091"}
             - name: PGPASSWORD
               valueFrom: {secretKeyRef: {name: questlog-postgres-creds, key: postgres-password}}
           volumeMounts:

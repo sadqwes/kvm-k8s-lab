@@ -27,3 +27,8 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: dash-questlog-pg-backups
+    files: [questlog-pg-backups.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

@@ -4,7 +4,7 @@ metadata:
   name: questlog-pg-backup
   namespace: questlog
 spec:
-  schedule: "0 3 * * *"
+  schedule: "0 12 * * *"
   timeZone: "Europe/Minsk"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -27,7 +27,7 @@ spec:
           initContainers:
             - name: pg-dump
               image: postgres:18.6-alpine
-              command: ["sh", "-c", "pg_dump --format=custom --file=/dump/questlog.dump && ls -l /dump"]
+              command: ["sh", "-c", "date +%s > /dump/START && pg_dump --format=custom --file=/dump/questlog.dump && ls -l /dump"]
               env:
                 - {name: PGHOST, value: questlog-postgres-postgresql}
                 - {name: PGUSER, value: questlog}
@@ -56,11 +56,26 @@ spec:
                   CUTOFF=$(date -u -d "14 days ago" +%Y-%m-%dT%H:%M:%S)
                   OLD=$(aws s3api list-objects-v2 --bucket postgres-backups --prefix questlog/ \
                     --query "Contents[?LastModified<\`$CUTOFF\`].Key" --output text)
+                  PRUNED=0
                   for k in $OLD; do
                     [ "$k" = "None" ] && continue   # пустой список aws-cli печатает как None
                     aws s3 rm "s3://postgres-backups/$k"
+                    PRUNED=$((PRUNED + 1))
                   done
-                  aws s3 ls s3://postgres-backups/questlog/
+                  LS=$(aws s3 ls s3://postgres-backups/questlog/ --summarize)
+                  echo "$LS"
+                  # Метрики для Grafana (дашборд «Backups: questlog Postgres»).
+                  # Пушим только после успеха: если бэкап упал, «возраст» растёт.
+                  # Pushgateway недоступен → бэкап всё равно считается успешным.
+                  NOW=$(date +%s)
+                  cat <<EOF | curl -fsS --max-time 10 --data-binary @- "$PUSHGATEWAY_URL/metrics/job/questlog_pg_backup" || echo "warn: push to Pushgateway failed"
+                  questlog_pg_backup_last_success_timestamp_seconds $NOW
+                  questlog_pg_backup_duration_seconds $((NOW - $(cat /dump/START)))
+                  questlog_pg_backup_size_bytes $(stat -c %s /dump/questlog.dump)
+                  questlog_pg_backup_objects $(echo "$LS" | awk '/Total Objects:/ {print $3}')
+                  questlog_pg_backup_bucket_bytes $(echo "$LS" | awk '/Total Size:/ {print $3}')
+                  questlog_pg_backup_pruned $PRUNED
+                  EOF
               env:
                 - {name: AWS_ENDPOINT_URL, value: "http://minio.minio-system.svc.cluster.local:9000"}
                 - {name: AWS_DEFAULT_REGION, value: us-east-1}
@@ -68,6 +83,7 @@ spec:
                 - name: AWS_SECRET_ACCESS_KEY
                   valueFrom: {secretKeyRef: {name: questlog-backup-s3, key: secretKey}}
                 - {name: HOME, value: /tmp}
+                - {name: PUSHGATEWAY_URL, value: "http://pushgateway.monitoring.svc.cluster.local:9091"}
               volumeMounts:
                 - {name: dump, mountPath: /dump, readOnly: true}
                 - {name: tmp, mountPath: /tmp}

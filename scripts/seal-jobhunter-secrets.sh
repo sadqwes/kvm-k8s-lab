@@ -30,7 +30,10 @@ kubectl -n "$NS" create secret generic jobhunter-auth \
 kubectl -n "$NS" create secret generic jobhunter-postgres \
   --from-literal=password="$PGPASS" \
   --dry-run=client -o yaml | kubeseal --format yaml > "$DIR/jobhunter-postgres-sealed.yaml"
-echo "запечатаны jobhunter-auth и jobhunter-postgres"
+# Тот же токен — questlog: он читает сводку jobhunter для карточки «Сегодня»
+kubectl -n questlog create secret generic questlog-jobhunter --from-literal=token="$TOKEN" \
+  --dry-run=client -o yaml | kubeseal --format yaml > gitops/platform/questlog/questlog-jobhunter-sealed.yaml
+echo "запечатаны jobhunter-auth, jobhunter-postgres и questlog-jobhunter"
 
 # Токен — в ~/.zshrc, как QUESTLOG_TOKEN: Claude читает его через `zsh -ic`, не видя значения
 ZSHRC=$HOME/.zshrc
@@ -41,4 +44,4 @@ else
 fi
 echo "JOBHUNTER_TOKEN записан в ~/.zshrc (значение не печатается)"
 echo
-echo "Дальше: git add $DIR && git commit && git push"
+echo "Дальше: git add $DIR gitops/platform/questlog && git commit && git push"

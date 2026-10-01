@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: questlog-jobhunter
+  namespace: questlog
+spec:
+  encryptedData:
+    token: AgCRvjcak9FRYvVY/sJfEuWQvX+lAQ5mBeoCsB27pZon6+c1+OTEbpEFXXgbpFVWYJvxICRLwMM7dqTSul5pRmr1sTkfiIo0j26r2+M1zp53h2hQV6WzLScKjbw2DZjWvBFcvRBMVWT7mwajr5sgJr5he4RdCJZap5RmdMwGZsmB6El+2sQ7owXpF2syTbc1km1GcCHAfACBBh0WdXqk/mO5fzX7lqhJXOzQbKhbP4On0dK8T38kFNF1bebtfsVxqZ1tanZGcbF/8OS9BIEZic2Ts+5fklWPSiHb7r8ErM2CmBKFXHt+XqHT5epK2s6hdfKbwUHtMO4sOXnvb7glefDSIYKdJD2G6rVVYzx6hY2R0YydPIuT1hL7biYHt7OFcxHj17mxcoOUp13WVycCmALymxC3wjpxPTFz3Z+Qlc332gg0L2vldKiD9+xQqDl7JN9ggZTpZtbAH7iLf0Jc1Fncid4w6ybz0Yd8WlSb2Ya4z4YNelNSX/f7gfCOmkZwk5kSqPXFy+/X+O2ODyCjZbOJcFTq+3kQyQ4y+fEhsBDcU5iD04NNaScikg9QP9eNwFBIuUHQEgKZIa0ZyPUC+29cwmsc906nVVkHdkMJfKockBfEJzX3VT9+yJAL0fbA/SPpQJY2XL5VGV60fJ4EEtw3MzfvqQJ9h/sXkfatNlJSAPnLAyzI/rJlJse9JaQDhrDSbauStIPPon96ZdlU81nlzPCXrrCVV6Pavl6TuHJM00e8s5qmUvrWei34AgHwwWKPqog1irFdeMX/uesH4uYY
+  template:
+    metadata:
+      name: questlog-jobhunter
+      namespace: questlog

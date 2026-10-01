@@ -61,6 +61,13 @@ spec:
                 secretKeyRef:
                   name: questlog-s3
                   key: secretKey
+            - name: JOBHUNTER_URL # сводка поиска работы для карточки «Сегодня» — внутри кластера, без ingress
+              value: http://jobhunter.jobhunter.svc.cluster.local:8080
+            - name: JOBHUNTER_TOKEN # тот же API-токен jobhunter, что у Claude (отзывается сменой jobhunter-auth)
+              valueFrom:
+                secretKeyRef:
+                  name: questlog-jobhunter
+                  key: token
           readinessProbe:
             httpGet: {path: /readyz, port: http}
             periodSeconds: 5

@@ -32,3 +32,8 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: dash-jobhunter
+    files: [jobhunter.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

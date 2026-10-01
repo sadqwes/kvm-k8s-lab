@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobhunter
+  namespace: jobhunter
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: jobhunter}
+  template:
+    metadata:
+      labels: {app: jobhunter}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532 # nonroot из distroless; числовой UID нужен, чтобы kubelet мог проверить runAsNonRoot
+        runAsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: app
+          image: ghcr.io/sadqwes/jobhunter:latest # CI заменяет тег на короткий SHA коммита
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics # отдельный порт: в ingress не попадает, его скрейпит только Prometheus
+              containerPort: 9090
+          env:
+            - {name: PGHOST, value: jobhunter-postgres.jobhunter.svc.cluster.local}
+            - {name: PGUSER, value: jobhunter}
+            - {name: PGDATABASE, value: jobhunter}
+            - {name: PGSSLMODE, value: disable}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef: {name: jobhunter-postgres, key: password}
+            - {name: JOBHUNTER_USER, value: sadqwes}
+            - name: JOBHUNTER_PASSWORD_HASH # bcrypt-хеш, сам пароль нигде не хранится
+              valueFrom:
+                secretKeyRef: {name: jobhunter-auth, key: password-hash}
+            - name: JOBHUNTER_API_TOKEN # токен для Claude, отзывается сменой секрета
+              valueFrom:
+                secretKeyRef: {name: jobhunter-auth, key: api-token}
+            - {name: WEEKLY_TARGET, value: "3"} # откликов в неделю — как в плане questlog
+            - {name: TZ, value: Europe/Minsk}
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}

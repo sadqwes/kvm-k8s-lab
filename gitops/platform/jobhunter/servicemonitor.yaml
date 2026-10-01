@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jobhunter
+  namespace: jobhunter
+  labels:
+    release: prometheus # kube-prometheus-stack подхватывает только ServiceMonitor с этой меткой
+spec:
+  selector:
+    matchLabels: {app: jobhunter}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

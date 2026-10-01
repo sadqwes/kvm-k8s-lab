@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: jobhunter-postgres
+  namespace: jobhunter
+spec:
+  encryptedData:
+    password: AgAvAUiLH+P4+G1xl45GMv9ietV0bxVrZxmiSA+V8ouRvDc88A9MMpyptv851wq9xMjnkbjwe+hO0TCF0ZXUW++UP+kDLRrknB4HYFU5JfSyASYn34HCbouUZEM9zlqR49tF5MjuuKxfn6Fsxxz4lM+tjRGQJAi9fXSpJRHJwC1Lfo2NqdvaXQd2G3QzU3QvOgHxWvA4WC07lqfZvV5TOiHN0nZvEdQB23mIZsWQBPmOEl4fR/WBRbkQdyg0fLJiO3YBtdQ+4BPYfKJcVxc4gzbtEMFrMeDHuMSrl2rireIXQVTdvXgwwg9RdgD8GAhhYf+xcy5FdjY7DVuiFHPm6F4OYL7dnfMo8lotKp85hsP8AbaYMhpB1zcovugD7R72UqXw5dMPjvR+MjXCES32Oqly9VU2foqPE7pVlVLDP4ouZrpwSWId8NOksdrFrpovSTY7zR7gYUD2iBd66Cpk2jzFSxwn/HZ5nVU+OkZht+HEdrakxRf7EdAx+RnLgL6pg8kVl+DYwHmBBuSXxCsERM7ZLVvvZGcZOEKkRsEVRgVPjwCRA0UZiUPEUT6b0nCJIgLRp1K81bmn67FJI0IR+taMlH1AnJuKaLQ/XkfqtJPHCHYBjpdRo31lDluhHbnR8QNS+mZfrRrBztAnYdvueD1TAIJgYAsZKlX19Keiq1mvn+PPMokPl83xoMhLH7mjlaql4GGkQaJn/xa5+DAvF8dZl7wYlqzVqtZFMqBOLbdeBx/27817b8WNXnXe6WVPyE8=
+  template:
+    metadata:
+      name: jobhunter-postgres
+      namespace: jobhunter

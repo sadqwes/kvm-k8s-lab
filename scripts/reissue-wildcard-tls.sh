@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 
 HOSTS=(
   argocd.local grafana.local longhorn.local
-  questlog.local
+  questlog.local jobhunter.local
   localhost 127.0.0.1 ::1
 )
 # ingress-nginx — сертификат по умолчанию (--default-ssl-certificate), остальные — для ingress с secretName

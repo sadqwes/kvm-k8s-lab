@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jobhunter
+  namespace: jobhunter
+  annotations:
+    # Вход — в самом приложении (сессия в cookie), здесь только принудительный https
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  # Без secretName ingress-nginx берёт сертификат по умолчанию: ingress-nginx/tls-wildcard (mkcert).
+  # Перевыпуск — scripts/reissue-wildcard-tls.sh (jobhunter.local уже в списке).
+  tls:
+    - hosts:
+        - jobhunter.local
+  rules:
+    - host: jobhunter.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jobhunter
+                port:
+                  name: http

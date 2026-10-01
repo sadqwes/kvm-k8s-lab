@@ -1,0 +1,74 @@
+# Postgres для jobhunter — простой StatefulSet на официальном образе postgres.
+# Не Bitnami-чарт, как у questlog: Bitnami перестал публиковать бесплатные образы (тот же риск, что с MinIO).
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobhunter-postgres
+  namespace: jobhunter
+  labels: {app: jobhunter-postgres}
+spec:
+  clusterIP: None # headless: у пода StatefulSet стабильное DNS-имя jobhunter-postgres-0.jobhunter-postgres
+  selector: {app: jobhunter-postgres}
+  ports:
+    - name: postgres
+      port: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jobhunter-postgres
+  namespace: jobhunter
+spec:
+  serviceName: jobhunter-postgres
+  replicas: 1
+  selector:
+    matchLabels: {app: jobhunter-postgres}
+  template:
+    metadata:
+      labels: {app: jobhunter-postgres}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70 # postgres в alpine-образе
+        runAsGroup: 70
+        fsGroup: 70 # том Longhorn будет доступен группе postgres
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: postgres
+          image: postgres:18.6-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - {name: POSTGRES_USER, value: jobhunter}
+            - {name: POSTGRES_DB, value: jobhunter}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: jobhunter-postgres, key: password}
+          volumeMounts:
+            # с postgres 18 том монтируют на /var/lib/postgresql, данные лежат в 18/docker внутри
+            - {name: data, mountPath: /var/lib/postgresql}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "jobhunter", "-d", "jobhunter"]
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "jobhunter", "-d", "jobhunter"]
+            periodSeconds: 20
+            failureThreshold: 6
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 1Gi

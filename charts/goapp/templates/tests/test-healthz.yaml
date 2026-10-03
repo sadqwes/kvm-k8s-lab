@@ -1,0 +1,31 @@
+{{- /*
+Тест чарта: `helm test <релиз>` запускает этот под и смотрит, завершился ли он успешно.
+Аннотация helm.sh/hook: test — под создаётся только командой helm test, при обычной установке его нет.
+(ArgoCD хуки test не запускает — тест для ручной проверки.)
+*/ -}}
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "goapp.name" . }}-test-healthz
+  labels:
+    {{- include "goapp.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command: ["wget", "-qO-", "http://{{ include "goapp.name" . }}:{{ .Values.ports.http }}/healthz"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+{{- end }}

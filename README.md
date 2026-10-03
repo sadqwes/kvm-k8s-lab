@@ -55,12 +55,15 @@ kvm-k8s-lab/
 │   ├── install-argocd.sh          # ArgoCD v3.5.1 + ApplicationSet CRD (server-side apply)
 │   ├── root-app.yaml              # root Application (App-of-Apps)
 │   └── sealed-secrets.pem         # PUBLIC kubeseal certificate (not a secret)
+├── charts/
+│   └── goapp/                     # my Helm chart for questlog and jobhunter (see its README)
 ├── gitops/
 │   ├── root/                      # ArgoCD Applications: longhorn, minio, velero, postgresql,
 │   │                              #   monitoring, loki, promtail, grafana-*,
 │   │                              #   questlog, metallb-config, lab-ingresses, tls-wildcard, ...
 │   ├── platform/                  # platform manifests and SealedSecrets
 │   │                              #   (minio-credentials, velero-credentials, ...)
+│   │                              #   questlog/, jobhunter/ — values.yaml for goapp + SealedSecrets
 │   └── apps/                      # application manifests
 └── README.md
 ```

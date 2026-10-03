@@ -1,0 +1,12 @@
+# Chart.yaml — «паспорт» чарта: имя, версия, описание.
+# version     — версия САМОГО ЧАРТА (шаблонов). Меняешь шаблоны — поднимаешь её.
+# appVersion  — версия приложения по умолчанию (у нас её задаёт image.tag в values, поэтому тут для справки).
+apiVersion: v2          # v2 — формат Helm 3+ (v1 был у Helm 2)
+name: goapp
+description: Общий чарт для моих Go-сервисов (questlog, jobhunter) — Deployment, Service, Ingress, ServiceMonitor.
+type: application       # application — ставит ресурсы; library — только общие шаблоны для других чартов
+version: 0.1.0
+appVersion: "1.0"
+maintainers:
+  - name: Elizaveta Sobal
+    url: https://github.com/sadqwes

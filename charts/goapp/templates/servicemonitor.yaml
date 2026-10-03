@@ -1,0 +1,24 @@
+{{- /*
+servicemonitor.yaml — говорит Prometheus Operator'у «скрейпь порт metrics у этого Service».
+Capabilities.APIVersions.Has — проверка, что CRD ServiceMonitor есть в кластере: чарт можно поставить
+и туда, где нет kube-prometheus-stack, — тогда ресурс просто не создаётся.
+*/ -}}
+{{- if and .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "goapp.name" . }}
+  labels:
+    {{- include "goapp.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "goapp.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+{{- end }}

@@ -1,0 +1,34 @@
+# Значения чарта charts/goapp для jobhunter. Здесь только то, чем jobhunter отличается от умолчаний.
+# Проверить, что получится: helm template jobhunter ../../../charts/goapp -f values.yaml -n jobhunter
+
+image:
+  repository: ghcr.io/sadqwes/jobhunter
+  tag: "6c39e2f" # CI заменяет тег на короткий SHA коммита
+
+tests:
+  enabled: false # под helm test не нужен в ArgoCD
+
+ingress:
+  enabled: true
+  host: jobhunter.local
+
+env:
+  - name: PGHOST
+    value: jobhunter-postgres.jobhunter.svc.cluster.local
+  - name: PGUSER
+    value: jobhunter
+  - name: PGDATABASE
+    value: jobhunter
+  - name: PGSSLMODE
+    value: disable
+  - name: JOBHUNTER_USER
+    value: sadqwes
+  - name: WEEKLY_TARGET # откликов в неделю — как в плане questlog
+    value: "3"
+  - name: TZ
+    value: Europe/Minsk
+
+secretEnv:
+  PGPASSWORD: {secret: jobhunter-postgres, key: password}
+  JOBHUNTER_PASSWORD_HASH: {secret: jobhunter-auth, key: password-hash} # bcrypt-хеш, сам пароль нигде не хранится
+  JOBHUNTER_API_TOKEN: {secret: jobhunter-auth, key: api-token}         # токен для Claude

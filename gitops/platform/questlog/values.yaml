@@ -1,0 +1,41 @@
+# Значения чарта charts/goapp для questlog. Здесь только то, чем questlog отличается от умолчаний.
+# Проверить, что получится: helm template questlog ../../../charts/goapp -f values.yaml -n questlog
+
+image:
+  repository: ghcr.io/sadqwes/questlog
+  tag: "7135b9d" # CI заменяет тег на короткий SHA коммита
+
+tests:
+  enabled: false # под helm test не нужен в ArgoCD
+
+ingress:
+  enabled: true
+  host: questlog.local
+
+env:
+  - name: PGHOST
+    value: questlog-postgres-postgresql.questlog.svc.cluster.local
+  - name: PGUSER
+    value: questlog
+  - name: PGDATABASE
+    value: questlog
+  - name: PGSSLMODE
+    value: disable
+  - name: QUESTLOG_USER
+    value: sadqwes
+  - name: S3_ENDPOINT # фото еды — в MinIO лабы
+    value: minio.minio-system.svc.cluster.local:9000
+  - name: S3_BUCKET
+    value: questlog-photos
+  - name: S3_ACCESS_KEY
+    value: questlog
+  - name: JOBHUNTER_URL # сводка поиска работы для карточки «Сегодня» — внутри кластера, без ingress
+    value: http://jobhunter.jobhunter.svc.cluster.local:8080
+
+# ИМЯ_ПЕРЕМЕННОЙ: {secret, key} — секреты приходят из SealedSecret'ов в этой же папке
+secretEnv:
+  PGPASSWORD: {secret: questlog-postgres-creds, key: password}
+  QUESTLOG_PASSWORD_HASH: {secret: questlog-auth, key: password-hash} # bcrypt-хеш, сам пароль нигде не хранится
+  QUESTLOG_API_TOKEN: {secret: questlog-auth, key: api-token}         # токен для наставника (Claude)
+  S3_SECRET_KEY: {secret: questlog-s3, key: secretKey}
+  JOBHUNTER_TOKEN: {secret: questlog-jobhunter, key: token}

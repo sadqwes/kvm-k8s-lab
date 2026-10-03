@@ -1,0 +1,89 @@
+# values.yaml — значения ПО УМОЛЧАНИЮ. Это «настройки» чарта.
+#
+# Как Helm собирает итоговые значения (каждый следующий слой перекрывает предыдущий):
+#   1. этот файл (charts/goapp/values.yaml)              — общие умолчания для всех сервисов
+#   2. файл приложения (-f gitops/platform/<app>/values.yaml) — то, чем отличается конкретный сервис
+#   3. --set image.tag=abc1234 в командной строке          — точечно, например в CI
+#
+# В шаблонах значения доступны как {{ .Values.<путь> }}, например {{ .Values.image.repository }}.
+
+# --- Образ ---------------------------------------------------------------
+image:
+  repository: ""          # обязательно задать в values приложения (иначе шаблон упадёт с понятной ошибкой)
+  tag: ""                 # CI подставляет короткий SHA коммита
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# --- Порты ---------------------------------------------------------------
+# http — для людей (через ingress), metrics — только для Prometheus (в ingress не попадает).
+ports:
+  http: 8080
+  metrics: 9090
+
+# --- Переменные окружения ------------------------------------------------
+# env — обычные значения, в том же формате, что в Kubernetes: список {name, value}.
+env: []
+# secretEnv — значения из Secret: ИМЯ_ПЕРЕМЕННОЙ: {secret: имя-секрета, key: ключ}.
+# Сами секреты чарт НЕ создаёт: они приходят из SealedSecret'ов рядом с values приложения.
+secretEnv: {}
+
+# --- Пробы ---------------------------------------------------------------
+# readiness — «готов принимать трафик» (иначе под убирают из Service),
+# liveness — «живой» (иначе kubelet перезапускает контейнер).
+probes:
+  readiness:
+    path: /readyz
+    periodSeconds: 5
+  liveness:
+    path: /healthz
+    periodSeconds: 10
+
+# --- Ресурсы -------------------------------------------------------------
+# requests — сколько резервирует scheduler, limits — потолок (память сверху — OOMKilled).
+resources:
+  requests:
+    cpu: 20m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+# --- Безопасность --------------------------------------------------------
+# Образы — distroless:nonroot, поэтому числовой UID 65532: kubelet проверяет runAsNonRoot только по числу.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# --- Ingress -------------------------------------------------------------
+ingress:
+  enabled: false
+  className: nginx
+  host: ""                # например questlog.local
+  # Без secretName ingress-nginx берёт сертификат по умолчанию (mkcert wildcard лабы).
+  tls: true
+  annotations:
+    # Вход — в самом приложении (сессия в cookie), здесь только принудительный https
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+# --- Тест чарта ---------------------------------------------------------
+# helm test <релиз> запускает под, который проверяет /healthz. ArgoCD хуки test не запускает,
+# поэтому в values приложений тест выключен — он для ручной установки через helm install.
+tests:
+  enabled: true
+
+# --- Метрики -------------------------------------------------------------
+metrics:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    # kube-prometheus-stack подхватывает только ServiceMonitor с этой меткой
+    labels:
+      release: prometheus

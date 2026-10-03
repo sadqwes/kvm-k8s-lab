@@ -1,3 +1,7 @@
+# questlog — из трёх источников одного репозитория (multi-source Application):
+#   1. чарт charts/goapp — Deployment, Service, Ingress, ServiceMonitor;
+#   2. ref: values — «ссылка» на репозиторий, чтобы взять из него values-файл ($values/...);
+#   3. папка gitops/platform/questlog — всё, что не входит в чарт (SealedSecret'ы и т.п.), кроме values.yaml.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -5,10 +9,22 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
-    targetRevision: main
-    path: gitops/platform/questlog
+  sources:
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      path: charts/goapp
+      helm:
+        releaseName: questlog # имя релиза = имя всех ресурсов (Deployment questlog, Service questlog…)
+        valueFiles:
+          - $values/gitops/platform/questlog/values.yaml
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      path: gitops/platform/questlog
+      directory:
+        exclude: values.yaml # values — не манифест Kubernetes, его читает только Helm
   destination:
     server: https://kubernetes.default.svc
     namespace: questlog

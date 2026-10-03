@@ -1,0 +1,6 @@
+{{ include "goapp.name" . }} {{ .Values.image.tag }} установлен в namespace {{ .Release.Namespace }}.
+{{- if .Values.ingress.enabled }}
+Открыть: https://{{ .Values.ingress.host }}
+{{- end }}
+Проверить: kubectl -n {{ .Release.Namespace }} rollout status deploy/{{ include "goapp.name" . }}
+Тест чарта: helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

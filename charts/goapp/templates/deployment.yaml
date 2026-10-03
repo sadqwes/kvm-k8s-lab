@@ -1,0 +1,62 @@
+{{- /*
+deployment.yaml — шаблон Deployment. Всё, что в {{ }}, Helm вычисляет при рендере:
+  .Values   — значения (values.yaml + values приложения)
+  .Release  — данные релиза: .Release.Name, .Release.Namespace
+  .Chart    — данные из Chart.yaml
+«-» в {{- и -}} убирает пробелы и переносы строк слева/справа, чтобы YAML остался ровным.
+*/ -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "goapp.name" . }}
+  labels:
+    {{- include "goapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "goapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "goapp.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: app
+          image: {{ include "goapp.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ports.http }}
+            - name: metrics # отдельный порт: в ingress не попадает, его скрейпит только Prometheus
+              containerPort: {{ .Values.ports.metrics }}
+          {{- if or .Values.env .Values.secretEnv }}
+          env:
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- /* range по map идёт в алфавитном порядке ключей — порядок стабильный, лишних diff нет */}}
+            {{- range $name, $ref := .Values.secretEnv }}
+            - name: {{ $name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $ref.secret }}
+                  key: {{ $ref.key }}
+            {{- end }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}

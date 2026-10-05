@@ -27,7 +27,22 @@ spec:
           initContainers:
             - name: pg-dump
               image: postgres:18.6-alpine
-              command: ["sh", "-c", "date +%s > /dump/START && pg_dump --format=custom --file=/dump/questlog.dump && ls -l /dump"]
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  # Кластер мог только что включиться: CronJob запускает пропущенный бэкап сразу,
+                  # а Postgres ещё стартует (3.10 так упали все 3 попытки — Connection refused).
+                  # Ждём до 5 минут, проверяя каждые 5 секунд.
+                  for i in $(seq 1 60); do
+                    pg_isready -q && break
+                    echo "postgres ещё не готов, жду ($i/60)"
+                    sleep 5
+                  done
+                  date +%s > /dump/START
+                  pg_dump --format=custom --file=/dump/questlog.dump
+                  ls -l /dump
               env:
                 - {name: PGHOST, value: questlog-postgres-postgresql}
                 - {name: PGUSER, value: questlog}

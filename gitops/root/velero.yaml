@@ -18,6 +18,22 @@ spec:
             volumeMounts:
               - mountPath: /target
                 name: plugins
+          # After the cluster starts, Velero runs the missed scheduled backup at once — while MinIO
+          # is still starting (5–7.10 every first backup failed: connection refused to minio:9000).
+          # Init containers run again on every cluster start, so Velero now waits for MinIO first:
+          # up to 10 minutes, then it starts anyway (a down MinIO must not block restores forever).
+          - name: wait-for-minio
+            image: busybox:1.37
+            command:
+              - sh
+              - -c
+              - |
+                for i in $(seq 1 120); do
+                  wget -q --spider http://minio.minio-system.svc:9000/minio/health/ready && echo "minio is ready" && exit 0
+                  echo "waiting for minio ($i/120)"
+                  sleep 5
+                done
+                echo "minio still not ready after 10 minutes, starting velero anyway"
         configuration:
           backupStorageLocation:
             - name: default

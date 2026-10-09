@@ -3,7 +3,7 @@
 
 image:
   repository: ghcr.io/sadqwes/questlog
-  tag: "f7ef8c4" # CI заменяет тег на короткий SHA коммита
+  tag: "a767d79" # CI заменяет тег на короткий SHA коммита
 tests:
   enabled: false # под helm test не нужен в ArgoCD
 ingress:

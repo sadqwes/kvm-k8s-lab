@@ -13,6 +13,10 @@ image:
   tag: ""                 # CI подставляет короткий SHA коммита
   pullPolicy: IfNotPresent
 
+# Приватный образ (ghcr.io с visibility Private): имя Secret типа docker-registry в namespace приложения.
+# Пример: imagePullSecrets: [{name: ghcr-pull}]. Сам Secret чарт не создаёт — он приходит SealedSecret'ом.
+imagePullSecrets: []
+
 replicaCount: 1
 
 # --- Порты ---------------------------------------------------------------

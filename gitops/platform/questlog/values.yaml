@@ -1,6 +1,10 @@
 # Значения чарта charts/goapp для questlog. Здесь только то, чем questlog отличается от умолчаний.
 # Проверить, что получится: helm template questlog ../../../charts/goapp -f values.yaml -n questlog
 
+# Образ приватный (в нём личные данные плана и ухода): тянем по токену из SealedSecret ghcr-pull.
+imagePullSecrets:
+  - name: ghcr-pull
+
 image:
   repository: ghcr.io/sadqwes/questlog
   tag: "3cbc841" # CI заменяет тег на короткий SHA коммита

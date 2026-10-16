@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: ghcr-pull
+  namespace: questlog
+spec:
+  encryptedData:
+    .dockerconfigjson: AgBPDSStwop08SsHkyqH44wHr1N2Hu1YN1YDxNlVxVXfy2WGBaYSiSIFlIRaomtBdtF5MQGzeYRzkQceqmlq8x77OAieJDJPEXcMFmx5vks+j6mUSlB1c4iTpXvElpWkNgf11bH6v/ICrl0HhEtG67Uofp4ywz1hSut8BISF8cKuGnudbF97YLBFa2lb892geu1aqApLZt3PRuPPowG1PyxFYrROeghCe4rGk2uGHliS5xUsM8gnEZV9i0Hoyt5uoL+f57OPmhyn+cHGP0M9bYm1c+op3pP52miNR0Om6r9NpANCmTBnglk91H2rvrhMhig+6i/Uc8VEOTV9fswRYtUGfXgPuC3VsXFm/3+b//nQZ51Dmj2h/S8s8AMH7YDD6U1NN7ExJ7FuLunLMrnBRG4u9TMyo6xOCl9fuC0DL9Pj3OExDY3cbLK9g468YpgieSNL4ywJ7G9ONo6Ub++xSQyIjCJAWywhtcGNBdDaO0dfNPRMwEMOOvQVH/nhahRd1bhMSoxewvQU3/Y4Eq/1/CwZjR7LwYd8f2sA9Oig+F/bdJstIlCuxR8/FxFjiHFRHW0v5ET21JtH1hwmSciv4LWRUBY9lGgos2CtM0lafEyiwMuE8pf7OzJcU1GQbTpOYwx2HFFnjd2OJuji30O5oWmFfADIrVCI3wWXb/uYLAvD9AhfFz1AD/bWDxkrl64d8/U2CaPnDU3iOd/Uyzw1gdyqA3IGsu3ePnEc/rrgdjW0GRs+IvisbFGSsVp6RfQgDA4H22z+OCrWoBs/4o4dY+RKG5hMWMh9gNl0eeNpZ37PxXBEJQD1WtBsRfMTHYu8iVPwepxOLADnzMotQK90k9EordLarId29zwRlL74DEK6z//uzP6iYVU4xmRAEkkVzsbtuud87Jp/q5vnjJXY67kOhzqasIMz5AulLwUT
+  template:
+    metadata:
+      name: ghcr-pull
+      namespace: questlog
+    type: kubernetes.io/dockerconfigjson

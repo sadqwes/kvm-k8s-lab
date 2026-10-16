@@ -92,26 +92,18 @@ kubectl get nodes
 cd .. && ./bootstrap/bootstrap.sh
 ```
 
-### 4. ArgoCD credentials for the private repository (manual, NOT in Git!)
+### 4. ArgoCD access to this repository
+
+The repository is public, so ArgoCD reads it **without a token** — `bootstrap/argocd-repo.yaml`
+registers only the URL. Don't add credentials to it: a revoked or rotated token on a public repo
+makes GitHub reject every fetch ("Invalid username or token"), while no token just works.
 
 ```bash
-read -s GITHUB_PAT
-kubectl apply -f - << SECRETEOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kvm-k8s-lab-repo
-  namespace: argocd
-  labels:
-    argocd.argoproj.io/secret-type: repository
-type: Opaque
-stringData:
-  type: git
-  url: https://github.com/sadqwes/kvm-k8s-lab.git
-  username: sadqwes
-  password: $GITHUB_PAT
-SECRETEOF
+kubectl apply -f bootstrap/argocd-repo.yaml
 ```
+
+The questlog image on ghcr.io is private: the cluster pulls it with the `ghcr-pull` SealedSecret
+(`scripts/seal-ghcr-pull.sh`, token with `read:packages` only).
 
 ### 5. Wait for sync and take the first backup
 

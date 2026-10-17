@@ -4,10 +4,9 @@
 # Образ приватный (в нём личные данные плана и ухода): тянем по токену из SealedSecret ghcr-pull.
 imagePullSecrets:
   - name: ghcr-pull
-
 image:
   repository: ghcr.io/sadqwes/questlog
-  tag: "3cbc841" # CI заменяет тег на короткий SHA коммита
+  tag: "bb92bd7" # CI заменяет тег на короткий SHA коммита
 tests:
   enabled: false # под helm test не нужен в ArgoCD
 ingress:

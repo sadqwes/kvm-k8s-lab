@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Доступ кластера к приватному образу questlog на ghcr.io → SealedSecret ghcr-pull в gitops/platform/questlog/.
+# Доступ кластера к приватному образу на ghcr.io → SealedSecret ghcr-pull в gitops/platform/<app>/.
+# Запуск: ./scripts/seal-ghcr-pull.sh questlog   (или jobhunter). Namespace = имя приложения.
 #
 # Нужен GitHub-токен (classic) только с правом read:packages:
 #   GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token,
@@ -9,8 +10,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 command -v kubeseal >/dev/null || { echo "нужен kubeseal: brew install kubeseal"; exit 1; }
 
-NS=questlog
-OUT=gitops/platform/questlog/ghcr-pull-sealed.yaml
+APP=${1:-questlog}
+NS=$APP
+OUT=gitops/platform/$APP/ghcr-pull-sealed.yaml
+[[ -d gitops/platform/$APP ]] || { echo "нет каталога gitops/platform/$APP"; exit 1; }
 read -r -p "GitHub username [sadqwes]: " GH_USER
 GH_USER=${GH_USER:-sadqwes}
 read -r -s -p "Токен read:packages (ввод скрыт): " GH_TOKEN
@@ -18,7 +21,7 @@ echo
 [[ -n $GH_TOKEN ]] || { echo "токен пустой"; exit 1; }
 
 # проверяем токен до того, как запечатать: GHCR должен выдать токен на pull
-if ! curl -fsS -u "$GH_USER:$GH_TOKEN" "https://ghcr.io/token?scope=repository:$GH_USER/questlog:pull" >/dev/null; then
+if ! curl -fsS -u "$GH_USER:$GH_TOKEN" "https://ghcr.io/token?scope=repository:$GH_USER/$APP:pull" >/dev/null; then
   echo "GHCR не принял токен: проверь, что у него есть read:packages"; exit 1
 fi
 

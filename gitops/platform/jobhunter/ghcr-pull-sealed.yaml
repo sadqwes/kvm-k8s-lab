@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: ghcr-pull
+  namespace: jobhunter
+spec:
+  encryptedData:
+    .dockerconfigjson: AgBj7dn4w5LRGxaIZnMM/yMwTD7X7j55ZS1E8glwlRIQGINruSjeKcc4VtygNF+yr7F5iZdSyOX2p/mvoycYCJPqU1lyxRxNW0q2B4XriMeud+HLDPRbD3hDcT4P8TYUJHrlI6lYd/aYEzTPRWMD4ENpU3+HwygzSgYLw6C944DpCrL5bJBLyWQzlWttGjp0dKKlTwesc5dE3EZTE7z+flJhMOsaa02rguBryIvACuTkdVdFoEN+ZKg4ny6uydqV905x0FwztCm7JYPHMyzWr0Mifg+mxnsNIi/sTgSbw/3VYu7j/iWmV4NWR3/WHym7oD59j3ln0xMnyoG7bDjH9MDBouhZ2WnHJ0X4+Mz3nHiVJP+T9CIrIbN26mF7g+rFAy78Rbos770q08iKEVwR+90VE79LbVbcmdonpsD7K4XnjO5d+nsewxG7KUunCoTjuPUtO0A9gUeT9x1O4KeFsn3K9Gb4DnEin+o2qqZa9wlN91KcZSxvCVTwzqJoplR9wHSMCzpyYKM6aLyFtK49l8zYZInvGPoTiaSbRvRyB5u5YCyfrk1/Y1ESPvC0MqIvlj1jyYwip36MdQsi7SCC152ap6ju/4tfy149+ZPZlvZjvw9szL7T2P5rG88gl+yEEFNtwuhwy54xO7SLsjnNFYHs7jy1QUogso7DRZhGB+aXEnJuu9L8gHZD2quRcTYLomlRiW+XIJcGNy/3joqj/pVPgo8jKQdR6tvYr8O3lwOtbxudV6SfM05q2IrQQDq6vFW3p/Vv0UAX5YpPL8zzAqZkRX4YFR2td1Yahyl4WvKlL1EbK7+fHHPkL6wJu11je+oqDAURIu5yCB2wL+4lh4rcGM2Ql8xxFs7o4KaA5rwJmJdVjuRJCvk1vA+9D4vZRUZXPm2Mf5deqpHnB+whVLyAWtHfZCySEwAkvUOS
+  template:
+    metadata:
+      name: ghcr-pull
+      namespace: jobhunter
+    type: kubernetes.io/dockerconfigjson

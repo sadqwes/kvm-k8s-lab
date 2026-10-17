@@ -1,6 +1,10 @@
 # Значения чарта charts/goapp для jobhunter. Здесь только то, чем jobhunter отличается от умолчаний.
 # Проверить, что получится: helm template jobhunter ../../../charts/goapp -f values.yaml -n jobhunter
 
+# Образ приватный: тянем по токену из SealedSecret ghcr-pull (scripts/seal-ghcr-pull.sh jobhunter).
+imagePullSecrets:
+  - name: ghcr-pull
+
 image:
   repository: ghcr.io/sadqwes/jobhunter
   tag: "fc83ee4" # CI заменяет тег на короткий SHA коммита

@@ -23,7 +23,7 @@ env:
   - name: WEEKLY_TARGET # откликов в неделю — как в плане questlog
     value: "3"
   - name: TZ
-    value: Europe/Minsk
+    value: Etc/GMT-3  # UTC+3 (у зон Etc/ знак наоборот)
 secretEnv:
   PGPASSWORD: {secret: jobhunter-postgres, key: password}
   JOBHUNTER_PASSWORD_HASH: {secret: jobhunter-auth, key: password-hash} # bcrypt-хеш, сам пароль нигде не хранится

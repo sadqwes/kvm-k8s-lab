@@ -5,7 +5,7 @@ metadata:
   namespace: questlog
 spec:
   schedule: "0 12 * * *"
-  timeZone: "Europe/Minsk"
+  timeZone: "Etc/GMT-3"  # UTC+3 (у зон Etc/ знак наоборот)
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3

@@ -450,7 +450,7 @@
       "id": 18,
       "type": "stat",
       "title": "Next Velero backup in",
-      "description": "Time until the next run of velero-periodic-backup. Computed from its cron 0 */6 * * * (UTC: 00, 06, 12, 18 = 03:00, 09:00, 15:00, 21:00 Minsk). If you change the cron in gitops/root/velero.yaml, change 21600 here too. If the cluster is off at that moment, Velero runs the missed backup right after start.",
+      "description": "Time until the next run of velero-periodic-backup. Computed from its cron 0 */6 * * * (UTC: 00, 06, 12, 18 = 03:00, 09:00, 15:00, 21:00 UTC+3). If you change the cron in gitops/root/velero.yaml, change 21600 here too. If the cluster is off at that moment, Velero runs the missed backup right after start.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"

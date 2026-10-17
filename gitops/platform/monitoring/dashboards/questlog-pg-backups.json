@@ -51,7 +51,7 @@
       "id": 2,
       "type": "stat",
       "title": "Last backup",
-      "description": "Time since the last successful pg_dump upload (pushed by the CronJob to the Pushgateway). Runs daily at 12:00 Minsk: yellow > 25 h (one run missed), red > 49 h.",
+      "description": "Time since the last successful pg_dump upload (pushed by the CronJob to the Pushgateway). Runs daily at 12:00 UTC+3: yellow > 25 h (one run missed), red > 49 h.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1213,7 +1213,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Check it by hand** (terminal on the Mac)\n\n| What | Command |\n|---|---|\n| Dumps in MinIO | see the upload logs: `kubectl -n questlog logs job/<job> -c upload` |\n| CronJob and its last runs | `kubectl -n questlog get cronjob questlog-pg-backup` and `kubectl -n questlog get jobs` |\n| Run a backup now | `kubectl -n questlog create job pg-backup-manual --from=cronjob/questlog-pg-backup` |\n| Why a backup failed | `kubectl -n questlog logs job/<job> -c pg-dump` and `-c upload` |\n| Restore test | `kubectl create -f scripts/pg-restore-test.yaml`, then `kubectl -n questlog logs job/<name> -c restore` |\n| Pushed metrics | `kubectl get --raw /api/v1/namespaces/monitoring/services/pushgateway:9091/proxy/metrics \\| grep questlog_pg` |\n\nSchedule: daily 12:00 Europe/Minsk · keep 14 days · manifest `gitops/platform/questlog/pg-backup-cronjob.yaml`"
+        "content": "**Check it by hand** (terminal on the Mac)\n\n| What | Command |\n|---|---|\n| Dumps in MinIO | see the upload logs: `kubectl -n questlog logs job/<job> -c upload` |\n| CronJob and its last runs | `kubectl -n questlog get cronjob questlog-pg-backup` and `kubectl -n questlog get jobs` |\n| Run a backup now | `kubectl -n questlog create job pg-backup-manual --from=cronjob/questlog-pg-backup` |\n| Why a backup failed | `kubectl -n questlog logs job/<job> -c pg-dump` and `-c upload` |\n| Restore test | `kubectl create -f scripts/pg-restore-test.yaml`, then `kubectl -n questlog logs job/<name> -c restore` |\n| Pushed metrics | `kubectl get --raw /api/v1/namespaces/monitoring/services/pushgateway:9091/proxy/metrics \\| grep questlog_pg` |\n\nSchedule: daily 12:00 UTC+3 · keep 14 days · manifest `gitops/platform/questlog/pg-backup-cronjob.yaml`"
       }
     }
   ]

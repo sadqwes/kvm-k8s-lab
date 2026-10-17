@@ -3,7 +3,7 @@
 
 image:
   repository: ghcr.io/sadqwes/jobhunter
-  tag: "472a4b3" # CI заменяет тег на короткий SHA коммита
+  tag: "fc83ee4" # CI заменяет тег на короткий SHA коммита
 tests:
   enabled: false # под helm test не нужен в ArgoCD
 ingress:
@@ -23,7 +23,7 @@ env:
   - name: WEEKLY_TARGET # откликов в неделю — как в плане questlog
     value: "3"
   - name: TZ
-    value: Etc/GMT-3  # UTC+3 (у зон Etc/ знак наоборот)
+    value: Etc/GMT-3 # UTC+3 (у зон Etc/ знак наоборот)
 secretEnv:
   PGPASSWORD: {secret: jobhunter-postgres, key: password}
   JOBHUNTER_PASSWORD_HASH: {secret: jobhunter-auth, key: password-hash} # bcrypt-хеш, сам пароль нигде не хранится

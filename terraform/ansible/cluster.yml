@@ -30,16 +30,16 @@
     - name: Ключ Kubernetes apt
       shell: |
         install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key \
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/Release.key \
           | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
         chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       args:
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-    - name: Репозиторий Kubernetes 1.31
+    - name: Репозиторий Kubernetes v{{ k8s_minor }}
       copy:
         dest: /etc/apt/sources.list.d/kubernetes.list
-        content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /\n"
+        content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/ /\n"
 
     - name: kubelet/kubeadm/kubectl
       apt:
@@ -76,7 +76,7 @@
       when: not cp_done.stat.exists
 
     - name: CNI (flannel)
-      shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+      shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/flannel-io/flannel/releases/download/{{ flannel_version }}/kube-flannel.yml
       when: not cp_done.stat.exists
 
     - name: Команда join для воркеров

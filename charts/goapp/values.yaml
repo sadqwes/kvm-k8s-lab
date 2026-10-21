@@ -19,6 +19,11 @@ imagePullSecrets: []
 
 replicaCount: 1
 
+# PodDisruptionBudget: сколько подов можно убрать одновременно при drain.
+pdb:
+  enabled: true
+  maxUnavailable: 1
+
 # --- Порты ---------------------------------------------------------------
 # http — для людей (через ingress), metrics — только для Prometheus (в ingress не попадает).
 ports:

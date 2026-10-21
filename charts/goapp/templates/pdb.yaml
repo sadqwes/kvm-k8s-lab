@@ -1,0 +1,15 @@
+{{- /* pdb.yaml — сколько подов можно убрать одновременно при drain/апгрейде. Включается флагом pdb.enabled. */ -}}
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "goapp.name" . }}
+  labels:
+    {{- include "goapp.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "goapp.selectorLabels" . | nindent 6 }}
+{{- end }}
+

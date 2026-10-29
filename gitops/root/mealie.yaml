@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mealie
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+    targetRevision: main
+    path: gitops/platform/mealie
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mealie
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [ "CreateNamespace=true" ]

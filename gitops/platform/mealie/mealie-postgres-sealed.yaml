@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: mealie-postgres
+  namespace: mealie
+spec:
+  encryptedData:
+    password: AgBGTEuQkHUt40B0w5SG1yJnM+hDKIr80tjPCV6x6dlBElW+k69SXSgyDYwoBUx+Mnoy4vZYR4xdzXYUWDjXuayQkRqoNixHjAELPd5VuEe0uMiZutk92GJVPK02cBLcJi+ivMxsG7vvMI8P5xFr/tA2hFdK6TPn17YQhegNwffRUDi34dTKQ5qxjwUgv3mgmg6eVPo90BknFXOcxq6CYIvEROazhtsLXpQ8gy5cyOgIDNMLoWFyOgVvSbKruMRsnCK6k6fvirP6dy2YifieV65PencqGWfGzx+XPMxofj0cOVEt+fhykRTdXMiEqTjOLE/T7hGpI2MmzjiPeWlHxXgoVodtjM9HIv5ZNjxfSU17fgVwqDgRkK/ty0bpha+JZ0lC2Qk2qIL/bRD7w+GCpIKyGEqOqgX0EY35tI3c5t4vfOISusrKO+qTtNO6zL3F1lrbC1gXOEFs2y+KygAWyBOiedalQkmHj7qIFaLngrPQSQt/sbN7YUR3yL8e6BCTqJDiC59W/KnKq5toz4gS8pDJClkq8vRQsT6C5U/5ng/q7+erJQSsJXq28jhkrMuJ4Usbi0z4FVagj12qGqMkNcsAgZG3P4GNZcy+jk2wLlV1+u9bnXR1A8TzHx6ECEPAs6Xzg/AtYoYDRusj+Hp6YAk4lmf+ixFUcTJrp7Pjknlb/dv1b7hCnK9AkGnczRgOfQOM+KbgL8ImS3oadrFvkhzQkUIplBYdxyLBza4fcNr/9GOwGe5fmLnW7FoJDMWOskk=
+  template:
+    metadata:
+      name: mealie-postgres
+      namespace: mealie

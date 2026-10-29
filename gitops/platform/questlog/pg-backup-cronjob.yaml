@@ -4,8 +4,8 @@ metadata:
   name: questlog-pg-backup
   namespace: questlog
 spec:
-  schedule: "0 12 * * *"
-  timeZone: "Etc/GMT-3"  # UTC+3 (у зон Etc/ знак наоборот)
+  schedule: "0 10 * * *"
+  timeZone: "Europe/Warsaw"  # именованная зона сама переходит на летнее/зимнее время
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3

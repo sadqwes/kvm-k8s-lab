@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealie
+  namespace: mealie
+  labels:
+    app: mealie
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mealie
+  template:
+    metadata:
+      labels:
+        app: mealie
+    spec:
+      securityContext:
+        runAsGroup: 911
+        runAsNonRoot: true
+        runAsUser: 911
+        fsGroup: 911
+      containers:
+        - name: mealie
+          image: ghcr.io/mealie-recipes/mealie:v3.29.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+              name: http
+          env:
+            - name: DB_ENGINE
+              value: postgres
+            - name: POSTGRES_SERVER
+              value: mealie-postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: mealie
+            - name: POSTGRES_DB
+              value: mealie
+            - name: BASE_URL
+              value: https://mealie.local
+            - name: ALLOW_SIGNUP
+              value: "false"
+            - name: TZ
+              value: Europe/Warsaw
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: mealie-postgres
+          volumeMounts:
+            - mountPath: /app/data
+              name: data
+          readinessProbe:
+            httpGet:
+              port: http
+              path: /api/app/about
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              port: http
+              path: /api/app/about
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              port: http
+              path: /api/app/about
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 20m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mealie-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mealie
+  namespace: mealie
+  labels:
+    app: mealie
+spec:
+  selector:
+    app: mealie
+  ports:
+    - port: 9000
+      name: http
+      targetPort: http
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mealie-data
+  namespace: mealie
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
+
+
+
+

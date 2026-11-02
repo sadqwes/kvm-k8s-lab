@@ -1,0 +1,33 @@
+# english-polygon — из трёх источников одного репозитория (multi-source Application):
+#   1. чарт charts/goapp — Deployment, Service, Ingress, ServiceMonitor;
+#   2. ref: values — «ссылка» на репозиторий, чтобы взять из него values-файл ($values/...);
+#   3. папка gitops/platform/english-polygon — всё, что не входит в чарт (SealedSecret'ы и т.п.), кроме values.yaml.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: english-polygon
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      path: charts/goapp
+      helm:
+        releaseName: english-polygon # имя релиза = имя всех ресурсов (Deployment english-polygon, Service english-polygon…)
+        valueFiles:
+          - $values/gitops/platform/english-polygon/values.yaml
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      path: gitops/platform/english-polygon
+      directory:
+        exclude: values.yaml # values — не манифест Kubernetes, его читает только Helm
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: english-polygon
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: ["CreateNamespace=true"]

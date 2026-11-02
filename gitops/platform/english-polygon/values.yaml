@@ -1,0 +1,34 @@
+# Значения чарта charts/goapp для english-polygon. Здесь только то, чем он отличается от умолчаний.
+# Проверить, что получится: helm template english-polygon ../../../charts/goapp -f values.yaml -n english-polygon
+
+imagePullSecrets:
+  - name: ghcr-pull
+
+image:
+  repository: ghcr.io/sadqwes/english-polygon
+  tag: "latest" # CI заменяет тег на короткий SHA коммита
+tests:
+  enabled: false
+metrics:
+  serviceMonitor:
+    enabled: false # у приложения нет /metrics
+ingress:
+  enabled: true
+  host: english.local
+env:
+  - name: PGHOST
+    value: english-polygon-postgres.english-polygon.svc.cluster.local
+  - name: PGUSER
+    value: english
+  - name: PGDATABASE
+    value: english
+  - name: PGSSLMODE
+    value: disable
+  - name: APP_USER
+    value: sadqwes
+  - name: TZ
+    value: Europe/Warsaw
+secretEnv:
+  PGPASSWORD: {secret: english-polygon-postgres, key: password}
+  APP_PASSWORD_HASH: {secret: english-polygon-auth, key: password-hash} # пароль тот же, что у questlog
+  APP_API_TOKEN: {secret: english-polygon-auth, key: api-token} # токен для Claude

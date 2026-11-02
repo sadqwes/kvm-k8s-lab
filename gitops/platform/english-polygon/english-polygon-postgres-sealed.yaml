@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: english-polygon-postgres
+  namespace: english-polygon
+spec:
+  encryptedData:
+    password: AgBm3Gc+jfNTY+vAqEppUfMLa4KKISi3hwseSHz+bMzDUUn7C1Gqk1ac5XN4BXTsuWOJ5my4tHHyBZTQOnQ79S7PT6cvz1k/eVIgiWRN3S+gZinemsUvJCU9BZzPqSquWGs+lOmR4PTNuTPZ9houbViqW41l73uErdYX+i6pJOrjq+fsc20bRLr4A/26ZXXRwTz9bVg0sWAzHBJpTpGbDykTJ3Vx8GXY3Q7sHp2MRG5+DtIpbWrnYmZqZumyGNuwRZH4Nbw3/1Zk/ogUIz0lAZifFhD8EImPztCKJkUqqDWeckOJnNVeVPSSBhL8q6ffvExNCFEvqZDpGk7+iwia7FvOlMLwaiwAcL0rQSJEsW1u0XyZcxWmikmTZyAEj7lXyTZrZsmdwTqUeBfr97zAU+oCxDbPR4vTz8mEGthOZPG/gYP2QsSOLCq7vvGHF2N5OCIAfZclZRBkkRiUE4/2PqPH52Q5S3b2FPwp168bJp5L66v7ZJejEYRJjV04ZlfOLxdHe7vF0FLOuOA9cgYpeZ9ADN+ehU+bmO3JdE5SYjGs6yCy1lgjzO/4iARKlusrR+3tJTqWOCoiISlfLrlHQIUNrETlK1/1txCR2MHuef5nyblCviYhU4OIWNaDLszzjbJCWp/D81I5+pCKirspRi/WHHbLW76WCXT+kWsUoEZr+hWmzVloq3JB0TrIwAShtoLYC7VBAGhHvpQ/S3dJNbvKchLYhoPoSciZ2beGXNgan2PGUjeIS6Ktqzm0Cv/QqBk=
+  template:
+    metadata:
+      name: english-polygon-postgres
+      namespace: english-polygon

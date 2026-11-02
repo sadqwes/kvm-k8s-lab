@@ -5,7 +5,7 @@ imagePullSecrets:
   - name: ghcr-pull
 image:
   repository: ghcr.io/sadqwes/english-polygon
-  tag: "1b6dd67" # CI заменяет тег на короткий SHA коммита
+  tag: "350735b" # CI заменяет тег на короткий SHA коммита
 tests:
   enabled: false
 metrics:

@@ -5,7 +5,7 @@ apiVersion: v2          # v2 — формат Helm 3+ (v1 был у Helm 2)
 name: goapp
 description: Общий чарт для моих Go-сервисов (questlog, jobhunter) — Deployment, Service, Ingress, ServiceMonitor.
 type: application       # application — ставит ресурсы; library — только общие шаблоны для других чартов
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.0"
 maintainers:
   - name: Elizaveta Sobal

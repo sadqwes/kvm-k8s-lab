@@ -12,4 +12,3 @@ spec:
     matchLabels:
       {{- include "goapp.selectorLabels" . | nindent 6 }}
 {{- end }}
-

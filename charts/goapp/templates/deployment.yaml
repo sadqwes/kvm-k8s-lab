@@ -12,7 +12,9 @@ metadata:
   labels:
     {{- include "goapp.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "goapp.selectorLabels" . | nindent 6 }}

@@ -19,6 +19,13 @@ imagePullSecrets: []
 
 replicaCount: 1
 
+# HorizontalPodAutoscaler: число подов по нагрузке CPU. По умолчанию выключен.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPU: 70
+
 # PodDisruptionBudget: сколько подов можно убрать одновременно при drain.
 pdb:
   enabled: true

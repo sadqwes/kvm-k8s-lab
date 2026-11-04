@@ -1,3 +1,8 @@
+locals {
+  # for_each нужен map: ключ — имя ноды, значение — вся нода
+  nodes = { for n in var.nodes : n.name => n }
+}
+
 resource "libvirt_network" "lab" {
   name      = "lab-net"
   mode      = "bridge"
@@ -12,8 +17,8 @@ resource "libvirt_volume" "base_image" {
 }
 
 resource "libvirt_volume" "vm_disk" {
-  count          = length(var.nodes)
-  name           = "${var.nodes[count.index].name}.qcow2"
+  for_each       = local.nodes
+  name           = "${each.value.name}.qcow2"
   pool           = "default"
   base_volume_id = libvirt_volume.base_image.id
   size           = var.vm_disk_size
@@ -26,39 +31,39 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_cloudinit_disk" "init" {
-  count = length(var.nodes)
-  name  = "${var.nodes[count.index].name}-init.iso"
-  pool  = "default"
+  for_each = local.nodes
+  name     = "${each.value.name}-init.iso"
+  pool     = "default"
 
   user_data = templatefile("${path.module}/cloud_init.cfg.tpl", {
-    hostname       = var.nodes[count.index].name
+    hostname       = each.value.name
     ssh_public_key = file(var.ssh_public_key_path)
   })
 
   network_config = templatefile("${path.module}/network_config.tpl", {
-    ip_address = var.nodes[count.index].ip
+    ip_address = each.value.ip
   })
 }
 
 resource "libvirt_domain" "vm" {
-  count  = length(var.nodes)
-  name   = var.nodes[count.index].name
-  memory = var.nodes[count.index].memory
-  vcpu   = var.nodes[count.index].vcpu
+  for_each = local.nodes
+  name     = each.value.name
+  memory   = each.value.memory
+  vcpu     = each.value.vcpu
 
-  cloudinit = libvirt_cloudinit_disk.init[count.index].id
+  cloudinit = libvirt_cloudinit_disk.init[each.key].id
 
   # Attach straight to the host bridge. With network_id of a bridge-mode network
   # libvirt stores the NIC as type=bridge anyway, so the provider showed a
   # permanent in-place diff (bridge "br0" -> null, + network_id) on every plan.
   network_interface {
     bridge         = "br0"
-    mac            = var.nodes[count.index].mac
+    mac            = each.value.mac
     wait_for_lease = false
   }
 
   disk {
-    volume_id = libvirt_volume.vm_disk[count.index].id
+    volume_id = libvirt_volume.vm_disk[each.key].id
   }
 
   cpu {

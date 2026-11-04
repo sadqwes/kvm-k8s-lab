@@ -10,8 +10,8 @@ variable "nodes" {
   }))
   default = [
     { name = "k8s-control-plane", role = "control-plane", ip = "192.168.31.111", mac = "52:54:00:8a:12:01", memory = 8192, vcpu = 2 },
-    { name = "k8s-worker01",      role = "worker",        ip = "192.168.31.112", mac = "52:54:00:8a:12:02", memory = 8192, vcpu = 2 },
-    { name = "k8s-worker02",      role = "worker",        ip = "192.168.31.113", mac = "52:54:00:8a:12:03", memory = 8192, vcpu = 2 },
+    { name = "k8s-worker01", role = "worker", ip = "192.168.31.112", mac = "52:54:00:8a:12:02", memory = 8192, vcpu = 2 },
+    { name = "k8s-worker02", role = "worker", ip = "192.168.31.113", mac = "52:54:00:8a:12:03", memory = 8192, vcpu = 2 },
   ]
 }
 

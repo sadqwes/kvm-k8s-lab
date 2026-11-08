@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://cloudnative-pg.github.io/charts
+    repoURL: ghcr.io/cloudnative-pg/charts   # OCI-реестр вместо GitHub releases
     chart: cloudnative-pg
     targetRevision: "0.29.1"
     helm:

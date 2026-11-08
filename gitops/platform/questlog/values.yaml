@@ -6,7 +6,7 @@ imagePullSecrets:
   - name: ghcr-pull
 image:
   repository: ghcr.io/sadqwes/questlog
-  tag: "cf61736" # CI заменяет тег на короткий SHA коммита
+  tag: "6113a6b" # CI заменяет тег на короткий SHA коммита
 autoscaling:
   enabled: true # HPA: 1–3 пода по CPU (questlog без своего тома — масштабировать можно)
 tests:

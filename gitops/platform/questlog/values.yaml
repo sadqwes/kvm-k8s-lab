@@ -33,6 +33,8 @@ env:
     value: questlog
   - name: JOBHUNTER_URL # сводка поиска работы для карточки «Сегодня» — внутри кластера, без ingress
     value: http://jobhunter.jobhunter.svc.cluster.local:8080
+  - name: PROMETHEUS_URL
+    value: http://prometheus-operated.monitoring.svc.cluster.local:9090
 # ИМЯ_ПЕРЕМЕННОЙ: {secret, key} — секреты приходят из SealedSecret'ов в этой же папке
 secretEnv:
   PGPASSWORD: {secret: questlog-postgres-creds, key: password}

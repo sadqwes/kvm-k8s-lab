@@ -37,3 +37,8 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: dash-questlog-slo
+    files: [questlog-slo.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

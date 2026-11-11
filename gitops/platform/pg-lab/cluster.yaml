@@ -8,3 +8,19 @@ spec:
   storage:
     size: 2Gi
     storageClass: longhorn
+  backup:
+    retentionPolicy: "7d"
+    barmanObjectStore:
+      destinationPath: s3://postgres-backups/pg-lab
+      endpointURL: http://minio.minio-system.svc.cluster.local:9000
+      s3Credentials:
+        accessKeyId:
+          name: pg-lab-s3
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: pg-lab-s3
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip

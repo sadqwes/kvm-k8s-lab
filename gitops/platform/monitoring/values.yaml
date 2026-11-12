@@ -16,6 +16,8 @@ grafana:
   grafana.ini:
     server:
       root_url: https://grafana.local
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/questlog-slo.json
   envFromSecret: slack-webhook
   # Alert rules / contact points / policies are picked up by the alerts sidecar
   # from ConfigMaps labelled grafana_alert=1 (see gitops/platform/grafana-alerting)

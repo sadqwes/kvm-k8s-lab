@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer        # файл должен заканчиваться переводом строки
+      - id: trailing-whitespace      # пробелы в конце строк
+      - id: check-merge-conflict     # забытые <<<<<<< после merge
+      - id: check-added-large-files  # случайно добавленный большой файл
+      - id: detect-private-key       # приватный ключ в коммите
+  - repo: local
+    hooks:
+      - id: yamllint
+        name: yamllint
+        entry: yamllint              # какая команда запускается
+        language: system             # программа уже стоит на Mac
+        types: [yaml]                # только YAML-файлы; список передаст pre-commit
+      - id: ansible-lint
+        name: ansible-lint
+        entry: ansible-lint terraform/ansible/cluster.yml
+        language: system
+        files: ^terraform/ansible/
+        pass_filenames: false
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+      - id: terraform-fmt
+        name: terraform-fmt
+        entry: terraform fmt -check -diff -recursive terraform
+        language: system
+        files: \.tf$
+        pass_filenames: false
+      - id: terraform-validate
+        name: terraform-validate
+        entry: bash -c 'cd terraform && terraform validate -no-color'
+        language: system
+        files: \.tf$
+        pass_filenames: false
+      - id: helm-lint
+        name: helm-lint
+        entry: bash -c 'helm lint charts/goapp -f gitops/platform/questlog/values.yaml && helm lint charts/goapp -f gitops/platform/jobhunter/values.yaml'
+        language: system
+        files: ^(charts/|gitops/platform/(questlog|jobhunter)/values)
+        pass_filenames: false

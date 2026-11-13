@@ -1,5 +1,7 @@
 # kvm-k8s-lab — KVM + Kubernetes homelab as code
 
+[![lint](https://github.com/sadqwes/kvm-k8s-lab/actions/workflows/lint.yml/badge.svg)](https://github.com/sadqwes/kvm-k8s-lab/actions/workflows/lint.yml)
+
 Full cluster lifecycle, "production-style", on home hardware:
 
 - **Infrastructure as code** — Terraform + libvirt (3 VMs on a KVM host)

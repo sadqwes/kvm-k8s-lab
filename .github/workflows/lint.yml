@@ -20,4 +20,3 @@ jobs:
       - run: terraform -chdir=terraform init -backend=false
       - uses: azure/setup-helm@v4
       - run: pre-commit run --from-ref ${{ github.event.pull_request.base.sha || github.event.before }} --to-ref ${{ github.sha }} --show-diff-on-failure
-

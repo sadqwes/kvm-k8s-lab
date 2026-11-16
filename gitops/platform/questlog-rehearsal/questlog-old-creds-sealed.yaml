@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: questlog-postgres-creds
+  namespace: questlog-rehearsal
+spec:
+  encryptedData:
+    password: AgBvdX5AmL5o8PzP+nUY+gd6/5peHBemehFPXjsW7Mn6R4sDEOpmhI850I8XTxWbxC0LgTS4gK767CcAjH6gkybaqcfxRm16q1+xLRivN5Wh5EECzcTHR6MN3IKy5Xt2a7d+qy1kAeZGopyg3+98AXcb0yv8ukJpgQp1t2jyafvzCHgGoMou9bQ0ifJXuJ+NE6RbK5p1I251BbrNmVC4q120XILGEUZsHTWLCnwcWSH0e5mctyTmNjI/PPDd1PiGqH1+4/nUSCmUCzR+px2WNqHcnaBwL9BrnFheDi4KXS+/KOKm8xXfsifsXPqTpqPGy3Y4ICCzT3FWQdqhXa+hYUDy0oEI7UptsM69hfPfPyPvs1u4YMqA3sERots5qSML5KlGrBWq7rjldolj9VFmWNqQolDQdkFbNPXZm9i1JSsFnxrYRHP6ytfjwHyOJnEroonqjXT54u8Q7aAXdyqYwWpFsie7b7N8Qy7U3g40iEgRdIYwKOPD4BgOsrdZgXe44cUHy/kANpp8kB1eCSCJwonRz/M2bub9zyoeBqlR7SXlY8rZ39cFg0y6ca2W6h4rl4AOU6+tS8X8K+xgSYjFE0xeCwtJHJnrK+8PJ8GVYi2JS9KOk3dPKTic/D4y6C8u4fihLqHYKPMQc1JODKtGsYGgkN2jS7M7pe9XdRIgYeVo8613WoarE2qoJLRmnvyjOLhCIull8dLVDjJwaoWTrqX5RC+qmuuLDzBbg/bufHppog==
+  template:
+    metadata:
+      name: questlog-postgres-creds
+      namespace: questlog-rehearsal
+    type: Opaque

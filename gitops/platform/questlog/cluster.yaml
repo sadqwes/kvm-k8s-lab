@@ -1,0 +1,38 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: questlog-db
+  namespace: questlog
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie
+  storage:
+    size: 1Gi
+    storageClass: longhorn
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 250m
+  bootstrap:
+    initdb:
+      database: questlog
+      owner: questlog
+      import:
+        type: microservice
+        databases:
+          - questlog
+        source:
+          externalCluster: questlog-old
+  externalClusters:
+    - name: questlog-old
+      connectionParameters:
+        host: questlog-postgres-postgresql.questlog.svc.cluster.local
+        user: questlog
+        dbname: questlog
+        sslmode: disable
+      password:
+        name: questlog-postgres-creds
+        key: password

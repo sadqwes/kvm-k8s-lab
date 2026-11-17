@@ -8,7 +8,8 @@ image:
   repository: ghcr.io/sadqwes/questlog
   tag: "d10f508" # CI заменяет тег на короткий SHA коммита
 autoscaling:
-  enabled: true # HPA: 1–3 пода по CPU (questlog без своего тома — масштабировать можно)
+  enabled: false # HPA: выключаем на момент переезда с postgres на cnpg
+replicaCount: 0
 tests:
   enabled: false # под helm test не нужен в ArgoCD
 ingress:

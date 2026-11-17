@@ -44,11 +44,11 @@ spec:
                   pg_dump --format=custom --file=/dump/questlog.dump
                   ls -l /dump
               env:
-                - {name: PGHOST, value: questlog-postgres-postgresql}
+                - {name: PGHOST, value: questlog-db-rw}
                 - {name: PGUSER, value: questlog}
                 - {name: PGDATABASE, value: questlog}
                 - name: PGPASSWORD
-                  valueFrom: {secretKeyRef: {name: questlog-postgres-creds, key: password}}
+                  valueFrom: {secretKeyRef: {name: questlog-db-app, key: password}}
               volumeMounts: [{name: dump, mountPath: /dump}]
               securityContext:
                 runAsUser: 70
@@ -83,7 +83,8 @@ spec:
                   # Пушим только после успеха: если бэкап упал, «возраст» растёт.
                   # Pushgateway недоступен → бэкап всё равно считается успешным.
                   NOW=$(date +%s)
-                  cat <<EOF | curl -fsS --max-time 10 --data-binary @- "$PUSHGATEWAY_URL/metrics/job/questlog_pg_backup" || echo "warn: push to Pushgateway failed"
+                  URL="$PUSHGATEWAY_URL/metrics/job/questlog_pg_backup"
+                  cat <<EOF | curl -fsS --max-time 10 --data-binary @- "$URL" || echo "warn: push to Pushgateway failed"
                   questlog_pg_backup_last_success_timestamp_seconds $NOW
                   questlog_pg_backup_duration_seconds $((NOW - $(cat /dump/START)))
                   questlog_pg_backup_size_bytes $(stat -c %s /dump/questlog.dump)

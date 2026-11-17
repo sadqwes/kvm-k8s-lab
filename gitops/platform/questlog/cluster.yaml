@@ -36,3 +36,19 @@ spec:
       password:
         name: questlog-postgres-creds
         key: password
+  backup:
+    retentionPolicy: "7d"
+    barmanObjectStore:
+      destinationPath: s3://postgres-backups/questlog-cnpg
+      endpointURL: http://minio.minio-system.svc.cluster.local:9000
+      s3Credentials:
+        accessKeyId:
+          name: questlog-db-s3
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: questlog-db-s3
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip

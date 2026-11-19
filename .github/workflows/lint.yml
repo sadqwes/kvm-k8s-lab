@@ -16,6 +16,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pre-commit yamllint ansible-lint
+      - run: ansible-galaxy collection install community.general
       - uses: hashicorp/setup-terraform@v3
       - run: terraform -chdir=terraform init -backend=false
       - uses: azure/setup-helm@v4

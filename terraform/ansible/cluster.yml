@@ -6,52 +6,60 @@
   hosts: all
   become: true
   tasks:
-    - name: Модуль br_netfilter + автозагрузка
-      shell: modprobe br_netfilter && echo br_netfilter > /etc/modules-load.d/k8s.conf
+    - name: Загрузить модуль br_netfilter
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+    - name: Автозагрузка br_netfilter
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: "br_netfilter\n"
+        mode: "0644"
 
-    - name: sysctl для K8s
-      copy:
+    - name: Sysctl для K8s
+      ansible.builtin.copy:
         dest: /etc/sysctl.d/99-k8s.conf
+        mode: "0644"
         content: |
           net.bridge.bridge-nf-call-iptables = 1
           net.bridge.bridge-nf-call-ip6tables = 1
           net.ipv4.ip_forward = 1
-      register: sysctl_conf
-
-    - name: Применить sysctl
-      shell: sysctl --system
-      when: sysctl_conf.changed
+      notify: Применить sysctl
 
     - name: Базовые пакеты + containerd
-      apt:
+      ansible.builtin.apt:
         update_cache: true
         name: [apt-transport-https, ca-certificates, curl, gpg, containerd]
 
     - name: Ключ Kubernetes apt
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         install -m 0755 -d /etc/apt/keyrings
         curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/Release.key \
           | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
         chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       args:
+        executable: /bin/bash
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
     - name: Репозиторий Kubernetes v{{ k8s_minor }}
-      copy:
+      ansible.builtin.copy:
         dest: /etc/apt/sources.list.d/kubernetes.list
+        mode: "0644"
         content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/ /\n"
 
-    - name: kubelet/kubeadm/kubectl
-      apt:
+    - name: Kubelet/kubeadm/kubectl
+      ansible.builtin.apt:
         update_cache: true
         name: [kubelet, kubeadm, kubectl]
       register: kube_pkgs
 
     - name: Зафиксировать версии
-      shell: apt-mark hold kubelet kubeadm kubectl
+      ansible.builtin.command: apt-mark hold kubelet kubeadm kubectl
+      changed_when: false
 
-    - name: containerd с SystemdCgroup
-      shell: |
+    - name: Containerd с SystemdCgroup
+      ansible.builtin.shell: |
         mkdir -p /etc/containerd
         containerd config default > /etc/containerd/config.toml
         sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
@@ -59,41 +67,51 @@
       args:
         creates: /etc/containerd/config.toml
 
+  handlers:
+    - name: Применить sysctl
+      ansible.builtin.command: sysctl --system
+      changed_when: true
+
 - name: Инициализация control plane
   hosts: k8s-control-plane
   become: true
   tasks:
     - name: Уже инициализирован?
-      stat:
+      ansible.builtin.stat:
         path: /etc/kubernetes/admin.conf
       register: cp_done
 
-    - name: kubeadm init
-      shell: >
+    - name: Kubeadm init
+      ansible.builtin.command: >
         kubeadm init
         --pod-network-cidr=10.244.0.0/16
         --apiserver-advertise-address={{ ansible_host }}
       when: not cp_done.stat.exists
+      changed_when: true
 
     - name: CNI (flannel)
-      shell: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/flannel-io/flannel/releases/download/{{ flannel_version }}/kube-flannel.yml
+      ansible.builtin.command: >
+        kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/flannel-io/flannel/releases/download/{{ flannel_version }}/kube-flannel.yml
       when: not cp_done.stat.exists
+      changed_when: true
 
     - name: Команда join для воркеров
-      shell: kubeadm token create --print-join-command
+      ansible.builtin.command: kubeadm token create --print-join-command
       register: join_cmd
+      changed_when: true
 
 - name: Присоединение воркеров
   hosts: all
   become: true
   tasks:
     - name: Уже в кластере?
-      stat:
+      ansible.builtin.stat:
         path: /etc/kubernetes/kubelet.conf
       register: joined
 
-    - name: kubeadm join
-      shell: "{{ hostvars['k8s-control-plane']['join_cmd'].stdout }}"
+    - name: Kubeadm join
+      ansible.builtin.command: "{{ hostvars['k8s-control-plane']['join_cmd'].stdout }}"
       when:
         - inventory_hostname != 'k8s-control-plane'
         - not joined.stat.exists
+      changed_when: true

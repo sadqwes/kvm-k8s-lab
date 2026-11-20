@@ -150,3 +150,55 @@ data:
                   maxDataPoints: 43200
                   refId: C
                   type: threshold
+          - uid: cnpg-backup-too-old
+            title: CNPGBackupTooOld
+            condition: C
+            noDataState: NoData
+            execErrState: Error
+            for: 5m
+            annotations:
+              summary: 'No base backup for {{ $labels.namespace }}/{{ $labels.cluster }} in 26h'
+            labels:
+              severity: warning
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  editorMode: code
+                  expr: time() - max by (namespace, cluster) (cnpg_collector_last_available_backup_timestamp)
+                  instant: true
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                datasourceUid: __expr__
+                model:
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - 93600
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                  expression: B
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: threshold

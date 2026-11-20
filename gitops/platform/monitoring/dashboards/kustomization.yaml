@@ -42,3 +42,8 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: dash-cnpg-backups
+    files: [cnpg-backups.json]
+    options:
+      labels:
+        grafana_dashboard: "1"

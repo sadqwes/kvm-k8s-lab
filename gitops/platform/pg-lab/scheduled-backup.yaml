@@ -1,0 +1,11 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: pg-lab-backup
+  namespace: pg-lab
+spec:
+  schedule: "0 0 10 * * *" # UTC: 10:00 UTC = 11:00 Warsaw (зимой)
+  cluster:
+    name: pg-lab
+  backupOwnerReference: self
+  immediate: true

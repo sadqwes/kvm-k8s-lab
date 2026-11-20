@@ -157,7 +157,7 @@ data:
             execErrState: Error
             for: 5m
             annotations:
-              summary: 'No base backup for {{ $labels.namespace }}/{{ $labels.cluster }} in 26h'
+              summary: 'No base backup in {{ $labels.namespace }} for 26h'
             labels:
               severity: warning
             data:
@@ -168,7 +168,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   editorMode: code
-                  expr: time() - max by (namespace, cluster) (cnpg_collector_last_available_backup_timestamp)
+                  expr: time() - max by (namespace) (cnpg_collector_last_available_backup_timestamp)
                   instant: true
                   intervalMs: 1000
                   maxDataPoints: 43200

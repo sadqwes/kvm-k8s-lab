@@ -6,6 +6,10 @@ metadata:
 spec:
   instances: 1
   imageName: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie
+  postgresql:
+    parameters:
+      wal_keep_size: 64MB
+      max_wal_size: 256MB
   storage:
     size: 1Gi
     storageClass: longhorn
@@ -20,22 +24,6 @@ spec:
     initdb:
       database: questlog
       owner: questlog
-      import:
-        type: microservice
-        databases:
-          - questlog
-        source:
-          externalCluster: questlog-old
-  externalClusters:
-    - name: questlog-old
-      connectionParameters:
-        host: questlog-postgres-postgresql.questlog.svc.cluster.local
-        user: questlog
-        dbname: questlog
-        sslmode: disable
-      password:
-        name: questlog-postgres-creds
-        key: password
   backup:
     retentionPolicy: "7d"
     barmanObjectStore:

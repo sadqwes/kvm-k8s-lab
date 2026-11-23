@@ -103,3 +103,6 @@ metrics:
     # kube-prometheus-stack подхватывает только ServiceMonitor с этой меткой
     labels:
       release: prometheus
+
+# Дополнительные метки только на поды (не на Deployment), например sidecar.istio.io/inject.
+podLabels: {}

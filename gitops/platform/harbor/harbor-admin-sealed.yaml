@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: harbor-admin
+  namespace: harbor
+spec:
+  encryptedData:
+    HARBOR_ADMIN_PASSWORD: AgBMWObkrYeY5unlUz8zctsd2IO0pEyASJW0k5LnwU9Fnus5fzOVtYuBQ0PzQ8PCj3qZXnBekysCappWy4oj9F2/+SKcNopoeigvpt+WYt7UVoN71jP2WBdBZY6PvnAmW9yA2wqTxQ4wo6Nw++eW20I4+2gsW+/PmL+pg+aQcUbNvsVZmo4ieFAC6YL/OlETBAr5sXoOah8zyrotttb/jlJ4j73+An9muSOZ4frI6ZKrq8YYXd07SfLZ567pM4jMwx33V7U6mkPQv/RksCJUtUBcbctXytLPiz70gmR0h8ZN3yvKjg1KlHrW6l6rnFzx9mB4QO0oeWCpeMxBAODfjM9C+o/ffJZj6BC9jokGNJjVAwX/Z8kZWRvFvReJB+XFsyiLarc4BEE3HAkpMUSjsCwa58lwxNSw8oM55Lsw53UlZw1X8gDV8ZT5COwhxGsjLgM7/DPyJXfqWpKhgMONy1Ay/lqE5l0zuy4VnN19CnVRvqi3aTZbWIorE3kV74uIhCFGQLspqNT4QpcgcOwPw+wo5rVSvfpHF+RYXecCt7cDeexVEL50mCjzwojuWYkGbwPOqnsGJD8vgE2RN6kJ4w5hWebxLlJqILT9NtzdxyUiEowgpzgyarDRhlxxtdkaim2YvaJS6VPGZ/e7Wtd+AMzngi4EE7wOpYPkFt+1gKXk10eaT8MHOpQsLA2ibWOnly9aelrBo48t2khmaD1ez/T8JBTXr+WcAR0=
+  template:
+    metadata:
+      name: harbor-admin
+      namespace: harbor

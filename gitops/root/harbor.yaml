@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://helm.goharbor.io
+      chart: harbor
+      targetRevision: "1.19.4"
+      helm:
+        releaseName: harbor
+        valuesObject:
+          expose:
+            type: ingress
+            tls: { enabled: true, certSource: none }   # none = без своего секрета, ingress-nginx отдаст сертификат по умолчанию
+            ingress:
+              className: nginx
+              hosts: { core: harbor.local }
+          externalURL: https://harbor.local          # этот адрес Harbor пишет в ссылках и в docker login
+          existingSecretAdminPassword: harbor-admin
+          existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+          persistence:
+            persistentVolumeClaim:
+              registry: { storageClass: longhorn, size: 5Gi }   # сами образы
+              database: { storageClass: longhorn, size: 1Gi }   # встроенный Postgres Harbor
+              redis: { storageClass: longhorn, size: 1Gi }
+              jobservice: { jobLog: { storageClass: longhorn, size: 1Gi } }
+              trivy: { storageClass: longhorn, size: 2Gi }   # база уязвимостей
+    - repoURL: https://github.com/sadqwes/kvm-k8s-lab.git
+      targetRevision: main
+      path: gitops/platform/harbor
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: ["CreateNamespace=true"]

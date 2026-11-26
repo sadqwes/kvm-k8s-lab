@@ -6,7 +6,7 @@ imagePullSecrets:
   - name: ghcr-pull
 image:
   repository: ghcr.io/sadqwes/questlog
-  tag: "10ac034" # CI заменяет тег на короткий SHA коммита
+  tag: "fb7663d" # CI заменяет тег на короткий SHA коммита
 podLabels:
   sidecar.istio.io/inject: "true"
 autoscaling:
